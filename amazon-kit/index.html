@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon注文履歴 → 経費台帳キット｜確定申告レスキュー</title>
+<meta name="description" content="Amazonの領収書を1枚ずつダウンロードする地獄を終わらせる。注文履歴を貼るだけで、商品名から勘定科目を自動仕分け。事業用か迷うものだけ"要確認"フラグ。freeeインポート形式の経費台帳CSVに書き出せます。">
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --ink:#e8ebf0; --muted:#9aa3b2; --accent:#4f8cff; --ok:#3ecf8e; --warn:#ffb020; --danger:#ff5d5d;
+    --radius:12px; --font:'Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6}
+  .wrap{max-width:980px;margin:0 auto;padding:24px 18px 80px}
+  header{text-align:center;padding:18px 0 8px}
+  header .kicker{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.08em}
+  header h1{font-size:26px;margin:6px 0 4px}
+  header p{color:var(--muted);margin:0;font-size:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:16px 0}
+  .step{display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:10px}
+  .step .n{background:var(--accent);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px}
+  textarea{width:100%;min-height:120px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:700;
+    cursor:pointer;font-size:14px;font-family:var(--font)}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .hint{color:var(--muted);font-size:12.5px}
+  .summary{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
+  .pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px}
+  .pill b{font-size:15px}
+  .pill.ok b{color:var(--ok)} .pill.warn b{color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{color:var(--muted);font-weight:600;font-size:12px}
+  tr.flag{background:rgba(255,176,32,.07)}
+  td.amount{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  select{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:13px;font-family:var(--font)}
+  tr.flag select{border-color:var(--warn)}
+  .badge{font-size:11px;padding:2px 7px;border-radius:999px;font-weight:700}
+  .badge.auto{background:rgba(62,207,142,.15);color:var(--ok)}
+  .badge.need{background:rgba(255,176,32,.15);color:var(--warn)}
+  .tablewrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.8}
+  footer a{color:var(--accent);text-decoration:none}
+  .disclaimer{font-size:11.5px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ok);color:#04140c;
+    padding:10px 18px;border-radius:8px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1}
+  .hidden{display:none}
+</style>
+<!-- GoatCounter analytics (nariken) -->
+<script data-goatcounter="https://nariken.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">確定申告レスキュー・キット</div>
+    <h1>Amazon注文履歴 → 経費台帳キット</h1>
+    <p>領収書を1枚ずつDLする地獄を終わらせる。注文履歴を貼るだけで、商品名から勘定科目を自動仕分け。</p>
+  </header>
+
+  <div class="card">
+    <div class="step"><span class="n">1</span>Amazonの注文履歴を貼り付け</div>
+    <p class="hint">Amazonの「注文履歴」や注文履歴レポートのCSVを貼り付け（注文日・商品名・金額の列があればOK）。手元にない人は「サンプルを入れる」で試せます。</p>
+    <textarea id="input" placeholder="注文日,商品名,金額&#10;2026-02-04,Anker USB-C ケーブル,1980&#10;2026-02-06,書籍 実践Rust,3520"></textarea>
+    <div class="row">
+      <button id="run">仕分けする</button>
+      <button class="ghost" id="sample">サンプルを入れる</button>
+      <button class="ghost" id="clear">クリア</button>
+    </div>
+  </div>
+
+  <div id="result" class="card hidden">
+    <div class="step"><span class="n">2</span>仕分け結果（あなたが見るのは <b id="flagInline">0</b> 件だけ）</div>
+    <div class="summary">
+      <span class="pill">注文 <b id="cTotal">0</b> 件</span>
+      <span class="pill ok">自動仕分け <b id="cAuto">0</b> 件</span>
+      <span class="pill warn">要確認 <b id="cFlag">0</b> 件</span>
+    </div>
+    <p class="hint">⚠️ 黄色の「要確認」行＝事業用か私用か・高額な資産かの判断が要る注文。ここだけ科目を選び直してください（それ以外は触らなくてOK）。</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>注文日</th><th>商品名</th><th class="amount">金額</th><th>勘定科目</th><th>判定</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="row">
+      <button id="export">freeeインポート形式でCSV書き出し</button>
+      <button class="ghost" id="copyPrompt">迷う注文をAIに丸投げするプロンプトをコピー</button>
+    </div>
+    <p class="hint">「AIに丸投げ」は、要確認だけをChatGPT/Claudeに貼って判断させたい人向け。コピーした文を貼るだけで使えます。</p>
+  </div>
+
+  <footer>
+    <p>このキットは <b>AICO</b>（AIで回す1人会社）が「個人事業主の業務の痛みをAIで解く」過程で作った無料ツールです。<br>
+    確定申告の口座連携が止まる人は <a href="../csv-kit/">銀行CSV→勘定科目 仕分けキット</a> も。<br>
+    ▶ 毎日の実験ログ: <a href="https://x.com/nariken" target="_blank" rel="noopener">@nariken</a>　／　▶ 深掘り: <a href="https://note.com/ken_narita269" target="_blank" rel="noopener">note</a>　／　▶ 受け取り・他のツール: <a href="https://nariken.github.io/narita-ken-hub/" target="_blank" rel="noopener">リンク集</a></p>
+    <p class="disclaimer">※ 入力データはブラウザ内だけで処理され、どこにも送信・保存されません（このページはオフラインでも動きます）。本ツールは経費台帳（帳簿）づくりの補助であり、税務上の個別助言ではありません。領収書・購入明細そのものは法定保存期間の保管が必要です。勘定科目・事業按分の最終判断は税理士等の専門家にご確認ください。</p>
+  </footer>
+</div>
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+// ── 勘定科目の推定ルール（商品名キーワード→科目）。透明・編集可能・オフライン動作。──
+// 思想: 商品名から事業用の定番を自動仕分けし、私用か迷うもの・高額資産だけ「要確認」で人間に回す。
+const RULES = [
+  {cat:"新聞図書費", kw:["書籍","技術書","参考書","kindle","コミック","新聞","雑誌","文庫","単行本"]},
+  {cat:"消耗品費",   kw:["ケーブル","usb","hdmi","マウス","キーボード","アダプタ","充電器","電池","乾電池","コピー用紙","用紙","ペン","ノート","文具","インク","トナー","sdカード","ハブ","スタンド","マウスパッド","クリーナー"]},
+  {cat:"通信費",     kw:["microsoft 365","office 365","adobe","subscription","サブスク","ソフト","ライセンス","ドメイン","vpn","クラウド"]},
+  {cat:"工具器具備品", kw:["モニター","ディスプレイ","webカメラ","ウェブカメラ","マイク","ヘッドセット","ssd","ハードディスク","hdd","ルーター","プリンタ","スキャナ","椅子","チェア","デスク"]},
+  {cat:"荷造運賃",   kw:["梱包","封筒","ダンボール","段ボール","緩衝材","プチプチ","テープ","ラベル"]},
+];
+// 私用の可能性が高い＝必ず要確認（事業按分の判断が要る）
+const PRIVATE_HINTS = ["プロテイン","サプリ","食品","お菓子","飲料","水 ","おむつ","おもちゃ","ゲーム","化粧品","シャンプー","洗剤","衣類","シャツ","靴","マスク","日用品","ペット"];
+const CATEGORIES = ["消耗品費","新聞図書費","通信費","工具器具備品","荷造運賃","広告宣伝費","会議費","旅費交通費","支払手数料","外注費","仕入高","事業主貸","要確認"];
+const FIXED_ASSET_THRESHOLD = 100000; // 10万円以上は固定資産/減価償却の判定が要る→要確認
+
+const SAMPLE = `注文日,商品名,金額
+2026-02-04,Anker USB-C ケーブル 2本セット,1980
+2026-02-06,書籍「実践Rustプログラミング」,3520
+2026-02-08,ロジクール ワイヤレスマウス,2980
+2026-02-11,コピー用紙 A4 2500枚,3200
+2026-02-13,HHKB Professional キーボード,36850
+2026-02-15,プロテイン 1kg チョコ味,4500
+2026-02-18,Kindle版「確定申告がわかる本」,1200
+2026-02-20,モバイルモニター 15.6インチ,25800
+2026-02-22,おむつ ビッグ 大容量パック,3800
+2026-02-25,HDMIケーブル 2m,990
+2026-02-27,Microsoft 365 Personal 1年版,12984
+2026-02-28,業務用プリンタ A3対応,128000`;
+
+let rows = [];
+
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  const first = lines[0];
+  const hasHeader = /注文日|date|商品|品名|金額|価格|注文番号/i.test(first);
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+  return dataLines.map(line=>{
+    const c = line.split(",").map(s=>s.trim());
+    // 列推定: [注文日, 商品名, 金額] / 金額は最後の数値列をフォールバックで拾う
+    const date = c[0]||"";
+    const name = c[1]||"";
+    let amount = num(c[2]);
+    if(!amount){ for(let i=c.length-1;i>=2;i--){ if(num(c[i])){ amount=num(c[i]); break; } } }
+    return {date, name, amount};
+  }).filter(r=>r.name);
+}
+function num(s){ if(!s) return 0; return parseInt(String(s).replace(/[^\d-]/g,""),10)||0; }
+function yen(n){ return "¥"+Math.abs(n).toLocaleString("ja-JP"); }
+
+function categorize(name, amount){
+  const d = name.toLowerCase();
+  if(amount>=FIXED_ASSET_THRESHOLD) return {cat:"工具器具備品", flag:true, reason:`10万円以上=固定資産/減価償却の判定が必要`};
+  for(const p of PRIVATE_HINTS){ if(d.includes(p.toLowerCase().trim())) return {cat:"事業主貸", flag:true, reason:`私用の可能性=事業按分の判断が必要`}; }
+  for(const r of RULES){ for(const k of r.kw){ if(d.includes(k.toLowerCase())) return {cat:r.cat, flag:false, reason:`「${k}」に一致`}; } }
+  return {cat:"要確認", flag:true, reason:"商品名から科目を判定できず"};
+}
+
+function run(){
+  const parsed = parseCSV(document.getElementById("input").value);
+  if(!parsed.length){ alert("注文履歴が読み取れませんでした。注文日,商品名,金額 の形式で貼り付けてください。"); return; }
+  rows = parsed.map(r=>{ const g=categorize(r.name,r.amount); return {...r, cat:g.cat, flag:g.flag, reason:g.reason}; });
+  render();
+  document.getElementById("result").classList.remove("hidden");
+  document.getElementById("result").scrollIntoView({behavior:"smooth"});
+}
+
+function render(){
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  rows.forEach((r,i)=>{
+    const tr = document.createElement("tr");
+    if(r.flag) tr.className="flag";
+    const opts = CATEGORIES.map(c=>`<option ${c===r.cat?"selected":""}>${c}</option>`).join("");
+    tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.name)}</td>
+      <td class="amount">${yen(r.amount)}</td>
+      <td><select data-i="${i}">${opts}</select></td>
+      <td><span class="badge ${r.flag?"need":"auto"}">${r.flag?"要確認":"自動"}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("select").forEach(sel=>{
+    sel.addEventListener("change",e=>{
+      const i=+e.target.dataset.i; rows[i].cat=e.target.value;
+      rows[i].flag = (e.target.value==="要確認");
+      e.target.closest("tr").className = rows[i].flag?"flag":"";
+      e.target.closest("tr").querySelector(".badge").className="badge "+(rows[i].flag?"need":"auto");
+      e.target.closest("tr").querySelector(".badge").textContent = rows[i].flag?"要確認":"自動";
+      updateCounts();
+    });
+  });
+  updateCounts();
+}
+function updateCounts(){
+  const total=rows.length, flag=rows.filter(r=>r.flag).length;
+  document.getElementById("cTotal").textContent=total;
+  document.getElementById("cAuto").textContent=total-flag;
+  document.getElementById("cFlag").textContent=flag;
+  document.getElementById("flagInline").textContent=flag;
+}
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function exportCSV(){
+  const header = ["収支区分","発生日","勘定科目","金額","摘要"];
+  const lines = rows.map(r=>[
+    "支出", r.date, r.cat, Math.abs(r.amount), `"Amazon ${r.name.replace(/"/g,'""')}"`
+  ].join(","));
+  const csv = "﻿"+[header.join(","),...lines].join("\r\n");
+  const blob = new Blob([csv],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "amazon_keihi_import.csv";
+  a.click();
+  toast("CSVを書き出しました");
+}
+function copyPrompt(){
+  const need = rows.filter(r=>r.flag);
+  if(!need.length){ toast("要確認の注文はありません"); return; }
+  const list = need.map(r=>`- ${r.date} / ${r.name} / ${yen(r.amount)}`).join("\n");
+  const prompt = `あなたは日本の個人事業主の確定申告を手伝う経理アシスタントです。
+以下のAmazon注文について、事業経費なら最も適切な勘定科目を、私用なら「事業主貸」を付けてください。10万円以上は固定資産の可能性に触れ、事業按分が要りそうなものは確認点を1行添えてください。
+
+注文:
+${list}
+
+出力形式: 「注文日 / 商品名 / 勘定科目 / （按分や資産計上の確認点）」`;
+  navigator.clipboard.writeText(prompt).then(()=>toast("プロンプトをコピーしました"));
+}
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+document.getElementById("run").addEventListener("click",run);
+document.getElementById("sample").addEventListener("click",()=>{document.getElementById("input").value=SAMPLE;});
+document.getElementById("clear").addEventListener("click",()=>{document.getElementById("input").value="";document.getElementById("result").classList.add("hidden");});
+document.getElementById("export").addEventListener("click",exportCSV);
+document.getElementById("copyPrompt").addEventListener("click",copyPrompt);
+</script>
+</body>
+</html>
