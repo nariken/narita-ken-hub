@@ -118,7 +118,7 @@ const RULES = [
 ];
 // 「振込」「ATM」「現金」「給与」等は事業/私用の区別がつかないため必ず要確認に。
 const FORCE_FLAG = ["振込","振替","atm","現金","給与","賞与","税金","保険","年金","返金","キャッシング","不明"];
-const CATEGORIES = ["通信費","消耗品費","会議費","旅費交通費","荷造運賃","水道光熱費","支払手数料","広告宣伝費","地代家賃","新聞図書費","接待交際費","外注費","仕入高","事業主貸","要確認"];
+const CATEGORIES = ["売上高","通信費","消耗品費","会議費","旅費交通費","荷造運賃","水道光熱費","支払手数料","広告宣伝費","地代家賃","新聞図書費","接待交際費","外注費","仕入高","事業主貸","事業主借","要確認"];
 
 const SAMPLE = `日付,摘要,出金,入金
 2026-02-03,アマゾンウェブサービス JP,3300,
@@ -161,7 +161,7 @@ function yen(n){ const s=Math.abs(n).toLocaleString("ja-JP"); return (n<0?"+":""
 
 function categorize(desc, amount){
   const d = desc.toLowerCase();
-  if(amount<0) return {cat:"事業主貸", flag:true, reason:"入金は売上/事業主借/返金の判別が必要"};
+  if(amount<0) return {cat:"売上高", flag:true, reason:"入金は売上/事業主借/返金の判別が必要"};
   for(const f of FORCE_FLAG){ if(d.includes(f.toLowerCase())) return {cat:"要確認", flag:true, reason:`「${f}」は事業/私用の区別が必要`}; }
   for(const r of RULES){ for(const k of r.kw){ if(d.includes(k.toLowerCase())) return {cat:r.cat, flag:false, reason:`「${k}」に一致`}; } }
   return {cat:"要確認", flag:true, reason:"既知パターンに一致せず"};
