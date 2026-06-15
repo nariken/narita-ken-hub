@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Asset Labo｜成田Ken</title>
+<meta name="description" content="仕事の痛みを“AIアセット”に変える公開実験室。完成したアセットは無料で使え、作り方のテンプレで自分のアセットも作れる。100人規模の会社をAIで再設計中の経営者がbuild in publicで運営。">
+<style>
+  :root{ --bg:#0E0E12; --card:#171A22; --card2:#1E222B; --line:#2A2E38; --teal:#1D9E75; --teal-l:#9FE7C9; --tx:#F2F3F5; --tx2:#9AA0AB; --warn:#FFB020; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--tx);font-family:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:620px;margin:0 auto;padding:36px 22px 72px}
+  .top{height:6px;background:var(--teal);border-radius:3px;margin-bottom:26px}
+  .back{display:inline-block;color:var(--tx2);font-size:13px;text-decoration:none;margin-bottom:18px}
+  .back:hover{color:var(--teal-l)}
+  .head{margin-bottom:8px}
+  .kicker{color:var(--teal-l);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+  h1{font-size:30px;font-weight:800;letter-spacing:.01em;margin-top:6px}
+  .lead{color:var(--tx2);font-size:14px;margin-top:10px}
+
+  .manifesto{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:14px;padding:20px 20px;margin:24px 0}
+  .manifesto p{font-size:14.5px;margin:0 0 10px}
+  .manifesto p:last-child{margin-bottom:0}
+  .manifesto b{color:var(--teal-l)}
+
+  .sec{color:var(--tx2);font-size:12px;letter-spacing:.12em;margin:34px 0 4px;text-transform:uppercase}
+  .sec-note{color:var(--tx2);font-size:12.5px;margin-bottom:12px}
+
+  .asset{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;transition:border-color .15s}
+  .asset:hover{border-color:var(--teal)}
+  .asset .a-top{display:flex;align-items:flex-start;gap:13px}
+  .a-ic{width:38px;height:38px;flex:none;border-radius:10px;background:#0e1218;display:flex;align-items:center;justify-content:center;font-size:19px}
+  .a-body{flex:1;min-width:0}
+  .a-name{font-weight:700;font-size:15.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .a-pain{color:var(--tx2);font-size:12.5px;margin-top:3px}
+  .status{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .st-live{background:rgba(29,158,117,.16);color:var(--teal-l)}
+  .st-exp{background:rgba(255,176,32,.14);color:var(--warn)}
+  .st-win{background:var(--teal);color:#04201a}
+  .a-out{color:var(--tx2);font-size:11.5px;margin-top:7px}
+  .a-actions{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
+  .btn{font-size:13px;font-weight:700;text-decoration:none;padding:8px 15px;border-radius:9px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--tx);font-family:inherit}
+  .btn.use{background:var(--teal);border-color:var(--teal);color:#04201a}
+  .btn.recipe:hover{border-color:var(--teal)}
+  .btn.soon{opacity:.45;cursor:not-allowed}
+
+  .recipe-panel{display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+  .recipe-panel.open{display:block}
+  .recipe-panel h4{font-size:13px;color:var(--teal-l);margin-bottom:8px}
+  .recipe-flow{font-size:12.5px;color:var(--tx2);margin-bottom:12px;line-height:1.9}
+  .recipe-flow b{color:var(--tx)}
+  pre.tmpl{background:#0b0e13;border:1px solid var(--line);border-radius:9px;padding:13px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.65;color:#cdd3dd;white-space:pre-wrap;word-break:break-word;max-height:330px;overflow:auto}
+  .copy{margin-top:9px}
+  .copied{color:var(--teal-l);font-size:12px;margin-left:10px;opacity:0;transition:.2s}
+  .copied.show{opacity:1}
+
+  .optin{background:var(--card2);border:1px dashed var(--teal);border-radius:14px;padding:20px;margin:16px 0}
+  .optin h3{font-size:15px;margin-bottom:6px}
+  .optin p{color:var(--tx2);font-size:12.5px;margin-bottom:12px}
+  .optin .soon-tag{display:inline-block;font-size:10.5px;font-weight:700;color:var(--warn);background:rgba(255,176,32,.14);padding:2px 8px;border-radius:999px;margin-left:8px}
+  .optin a.x{display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#04201a;text-decoration:none;font-weight:700;font-size:13px;padding:9px 16px;border-radius:9px}
+
+  .log{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin:10px 0;color:var(--tx);text-decoration:none}
+  .log:hover{border-color:var(--teal)}
+  .log .ic{width:30px;height:30px;flex:none;border-radius:8px;background:#0e1218;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .log .tt{font-weight:700;font-size:14px}
+  .log .d{color:var(--tx2);font-size:11.5px;margin-top:1px}
+  .foot{text-align:center;color:var(--tx2);font-size:12px;margin-top:38px;line-height:1.8}
+</style>
+<!-- GoatCounter analytics (nariken) -->
+<script data-goatcounter="https://nariken.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"></div>
+  <a class="back" href="../">← 成田Ken Hub にもどる</a>
+
+  <div class="head">
+    <div class="kicker">AI Asset Labo</div>
+    <h1>AIアセット実験室</h1>
+    <p class="lead">仕事の痛みを“AIアセット”に変える公開実験室。完成したアセットは無料で使えて、作り方のテンプレで<b>あなた自身のアセット</b>も作れる。</p>
+  </div>
+
+  <div class="manifesto">
+    <p><b>ツール</b>は、使うのをやめれば価値が止まる。<b>アセット</b>は、持っているだけでAIが動かし続ける。</p>
+    <p>私は100人規模の会社を、仕事の痛みを一つずつ“AIアセット”に変えながら丸ごと再設計しています。その過程を、失敗も含めて全部ここに公開します（build in public）。</p>
+    <p>完成したアセットは無料で使ってください。そして——<b>作り方のテンプレ</b>も置いておきます。あなたの会社の痛みも、あなた自身のアセットにできるように。</p>
+  </div>
+
+  <div class="sec">アセット棚</div>
+  <div class="sec-note">いま動いているアセット。「使う」でそのまま試せて、「作り方を見る」で自分用に作り直せる。</div>
+
+  <!-- amazon-kit (勝ち筋) -->
+  <div class="asset">
+    <div class="a-top">
+      <span class="a-ic">📦</span>
+      <div class="a-body">
+        <div class="a-name">Amazon注文履歴 → 経費台帳キット <span class="status st-win">勝ち筋</span></div>
+        <div class="a-pain">痛み: 領収書を1枚ずつダウンロードする確定申告の地獄</div>
+        <div class="a-out">注文履歴を貼るだけ → 商品名から勘定科目を自動仕分け → freeeインポート形式で書き出し</div>
+      </div>
+    </div>
+    <div class="a-actions">
+      <a class="btn use" href="../amazon-kit/">使う</a>
+      <button class="btn recipe" data-recipe="amazon">作り方を見る</button>
+    </div>
+    <div class="recipe-panel" id="recipe-amazon">
+      <h4>体験: あなた専用の「経費仕分けアシスタント」を1分で作る</h4>
+      <div class="recipe-flow">
+        <b>1.</b> 下のテンプレを「コピー」　<b>2.</b> Claude（claude.ai）に貼る　<b>3.</b> 【業種】を自分の事業に書き換え、Amazonの注文履歴を貼る　<b>4.</b> あなた専用の仕分け＆CSVが出る＝<b>あなたの最初のAIアセット</b>
+      </div>
+      <pre class="tmpl" id="tmpl-amazon">あなたは日本の確定申告にくわしい経理アシスタントです。
+私はAmazonの注文履歴をコピペします。各商品について次をしてください。
+
+1. 商品名から勘定科目を推定する
+   （消耗品費 / 新聞図書費 / 通信費 / 工具器具備品 / 雑費 など）
+2. 事業用か私用か迷うものには「要確認」フラグを付ける
+3. freeeインポート用に「日付, 内容, 金額, 勘定科目, 備考」の
+   CSV形式で出力する
+
+私の事業は【ここに業種：例 美容室 / ITコンサル / 小売】です。
+この業種に合わせて勘定科目を選んでください。
+
+==== ここから下に Amazon の注文履歴を貼る ====
+（Amazonの「注文履歴」ページをそのままコピペ）</pre>
+      <div class="copy">
+        <button class="btn use" data-copy="tmpl-amazon" data-ev="labo-copy-amazon">テンプレをコピー</button>
+        <span class="copied" id="copied-amazon">コピーしました ✓</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- csv-kit -->
+  <div class="asset">
+    <div class="a-top">
+      <span class="a-ic">🧾</span>
+      <div class="a-body">
+        <div class="a-name">銀行CSV → 勘定科目 仕分けキット <span class="status st-live">公開</span></div>
+        <div class="a-pain">痛み: 確定申告の口座連携が止まると入力が詰む</div>
+        <div class="a-out">明細を貼るだけ → 摘要から勘定科目を自動仕分け</div>
+      </div>
+    </div>
+    <div class="a-actions">
+      <a class="btn use" href="../csv-kit/">使う</a>
+      <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
+    </div>
+  </div>
+
+  <!-- mercari-kit -->
+  <div class="asset">
+    <div class="a-top">
+      <span class="a-ic">🛍️</span>
+      <div class="a-body">
+        <div class="a-name">メルカリ売上 → 確定申告 仕分けキット <span class="status st-live">公開</span></div>
+        <div class="a-pain">痛み: 売上を売上高・手数料・送料に分解できない</div>
+        <div class="a-out">取引履歴を貼るだけ → 売上高/手数料/送料に自動分解</div>
+      </div>
+    </div>
+    <div class="a-actions">
+      <a class="btn use" href="../mercari-kit/">使う</a>
+      <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
+    </div>
+  </div>
+
+  <!-- DemandSignal -->
+  <div class="asset">
+    <div class="a-top">
+      <span class="a-ic">📈</span>
+      <div class="a-body">
+        <div class="a-name">DemandSignal β <span class="status st-exp">実験中</span></div>
+        <div class="a-pain">痛み: 価格が上がる前に需要の急増を察知できない</div>
+        <div class="a-out">需要急増を価格が上がる前に検知（早期アクセス・先着）</div>
+      </div>
+    </div>
+    <div class="a-actions">
+      <a class="btn use" href="https://nariken.github.io/demandsignal-lp/" target="_blank" rel="noopener">使う</a>
+      <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
+    </div>
+  </div>
+
+  <!-- mood-art -->
+  <div class="asset">
+    <div class="a-top">
+      <span class="a-ic">🎨</span>
+      <div class="a-body">
+        <div class="a-name">きもち → 絵 ジェネレーター <span class="status st-exp">実験中</span></div>
+        <div class="a-pain">痛み: （遊び）今の気持ちを一枚の絵にしたい</div>
+        <div class="a-out">気持ちを書く → AIで一枚の絵に・スクラッチで“答え”が出る</div>
+      </div>
+    </div>
+    <div class="a-actions">
+      <a class="btn use" href="https://mood-art-indol.vercel.app/" target="_blank" rel="noopener">使う</a>
+      <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
+    </div>
+  </div>
+
+  <!-- 受け皿 opt-in (準備中) -->
+  <div class="optin">
+    <h3>新しいAIアセット＆テンプレを最初に受け取る<span class="soon-tag">受け取り口は準備中</span></h3>
+    <p>メールでの通知登録は近日公開。いまはXで実験ログをそのまま流しています。フォローしておくと作りたてのアセットが届きます。</p>
+    <a class="x" href="https://x.com/nariken" target="_blank" rel="noopener" id="optin-x">𝕏 @nariken をフォロー</a>
+  </div>
+
+  <div class="sec">毎日更新・実験ログ</div>
+  <a class="log" href="https://x.com/nariken" target="_blank" rel="noopener">
+    <span class="ic">𝕏</span><span><div class="tt">X（@nariken）</div><div class="d">AI活用の失敗も成功も、実験ログをそのまま</div></span>
+  </a>
+  <a class="log" href="https://note.com/ken_narita269" target="_blank" rel="noopener">
+    <span class="ic">📝</span><span><div class="tt">note（開発ログ・深掘り）</div><div class="d">AIアセットを作った全工程・失敗込みで</div></span>
+  </a>
+  <a class="log" href="https://www.youtube.com/@narita_ken-l5z" target="_blank" rel="noopener">
+    <span class="ic">▶</span><span><div class="tt">YouTube</div><div class="d">3分で分かるAI解説 Shorts</div></span>
+  </a>
+
+  <div class="foot">© 成田Ken / Company OS — 一緒に、未来の会社をつくっていきましょう。</div>
+</div>
+
+<script>
+  // 作り方パネルの開閉 + イベント計測
+  document.querySelectorAll('.btn.recipe:not(.soon)').forEach(function(b){
+    b.addEventListener('click', function(){
+      var panel = document.getElementById('recipe-' + b.dataset.recipe);
+      if(!panel) return;
+      var opening = !panel.classList.contains('open');
+      panel.classList.toggle('open');
+      if(opening && window.goatcounter && window.goatcounter.count){
+        window.goatcounter.count({path:'labo-recipe-open-' + b.dataset.recipe, title:'labo recipe open', event:true});
+      }
+    });
+  });
+  // テンプレのコピー + イベント計測
+  document.querySelectorAll('[data-copy]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var el = document.getElementById(b.dataset.copy);
+      if(!el) return;
+      var text = el.innerText;
+      var done = function(){
+        var c = document.getElementById('copied-' + b.dataset.copy.replace('tmpl-',''));
+        if(c){ c.classList.add('show'); setTimeout(function(){ c.classList.remove('show'); }, 1800); }
+        if(window.goatcounter && window.goatcounter.count){
+          window.goatcounter.count({path:b.dataset.ev, title:'labo template copy', event:true});
+        }
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+      } else { fallbackCopy(text); done(); }
+    });
+  });
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea'); ta.value = text;
+    ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta);
+  }
+  // opt-in(X)クリック計測
+  var ox = document.getElementById('optin-x');
+  if(ox) ox.addEventListener('click', function(){
+    if(window.goatcounter && window.goatcounter.count){
+      window.goatcounter.count({path:'labo-optin-x', title:'labo optin x follow', event:true});
+    }
+  });
+</script>
+</body>
+</html>
