@@ -101,7 +101,7 @@
       </div>
     </div>
     <div class="a-actions">
-      <a class="btn use" href="../amazon-kit/">使う</a>
+      <a class="btn use" href="../amazon-kit/" data-ev="labo-use-amazon">使う</a>
       <button class="btn recipe" data-recipe="amazon">作り方を見る</button>
     </div>
     <div class="recipe-panel" id="recipe-amazon">
@@ -145,7 +145,7 @@
       </div>
     </div>
     <div class="a-actions">
-      <a class="btn use" href="../csv-kit/">使う</a>
+      <a class="btn use" href="../csv-kit/" data-ev="labo-use-csv">使う</a>
       <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
     </div>
   </div>
@@ -161,7 +161,7 @@
       </div>
     </div>
     <div class="a-actions">
-      <a class="btn use" href="../mercari-kit/">使う</a>
+      <a class="btn use" href="../mercari-kit/" data-ev="labo-use-mercari">使う</a>
       <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
     </div>
   </div>
@@ -177,7 +177,7 @@
       </div>
     </div>
     <div class="a-actions">
-      <a class="btn use" href="https://nariken.github.io/demandsignal-lp/" target="_blank" rel="noopener">使う</a>
+      <a class="btn use" href="https://nariken.github.io/demandsignal-lp/" target="_blank" rel="noopener" data-ev="labo-use-demandsignal">使う</a>
       <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
     </div>
   </div>
@@ -193,7 +193,7 @@
       </div>
     </div>
     <div class="a-actions">
-      <a class="btn use" href="https://mood-art-indol.vercel.app/" target="_blank" rel="noopener">使う</a>
+      <a class="btn use" href="https://mood-art-indol.vercel.app/" target="_blank" rel="noopener" data-ev="labo-use-moodart">使う</a>
       <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
     </div>
   </div>
@@ -220,6 +220,14 @@
 </div>
 
 <script>
+  // 「使う」=アセット棚→ツール遷移の計測（変換修復スプリントの一次シグナル）
+  document.querySelectorAll('a.btn.use[data-ev]').forEach(function(a){
+    a.addEventListener('click', function(){
+      if(window.goatcounter && window.goatcounter.count){
+        window.goatcounter.count({path:a.dataset.ev, title:'labo asset use', event:true});
+      }
+    });
+  });
   // 作り方パネルの開閉 + イベント計測
   document.querySelectorAll('.btn.recipe:not(.soon)').forEach(function(b){
     b.addEventListener('click', function(){
