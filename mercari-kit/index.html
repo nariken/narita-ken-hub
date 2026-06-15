@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メルカリ売上 → 確定申告 仕分けキット｜確定申告レスキュー</title>
+<meta name="description" content="メルカリの売上、確定申告でどう書くの？を終わらせる。売れた商品を貼るだけで、売上高・販売手数料(10%)・送料を自動で帳簿の形に分解。送料だけ確認すればOK。freeeインポート形式のCSVに書き出せます。">
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --ink:#e8ebf0; --muted:#9aa3b2; --accent:#4f8cff; --ok:#3ecf8e; --warn:#ffb020; --danger:#ff5d5d;
+    --radius:12px; --font:'Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6}
+  .wrap{max-width:980px;margin:0 auto;padding:24px 18px 80px}
+  header{text-align:center;padding:18px 0 8px}
+  header .kicker{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.08em}
+  header h1{font-size:26px;margin:6px 0 4px}
+  header p{color:var(--muted);margin:0;font-size:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:16px 0}
+  .step{display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:10px}
+  .step .n{background:var(--accent);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px}
+  textarea{width:100%;min-height:120px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:700;
+    cursor:pointer;font-size:14px;font-family:var(--font)}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .hint{color:var(--muted);font-size:12.5px}
+  .summary{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
+  .pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px}
+  .pill b{font-size:15px}
+  .pill.ok b{color:var(--ok)} .pill.warn b{color:var(--warn)} .pill.accent b{color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{color:var(--muted);font-weight:600;font-size:12px}
+  tr.flag{background:rgba(255,176,32,.07)}
+  td.amount{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  input.ship{width:90px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:6px;
+    padding:5px 8px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums;font-family:var(--font)}
+  tr.flag input.ship{border-color:var(--warn)}
+  .badge{font-size:11px;padding:2px 7px;border-radius:999px;font-weight:700}
+  .badge.auto{background:rgba(62,207,142,.15);color:var(--ok)}
+  .badge.need{background:rgba(255,176,32,.15);color:var(--warn)}
+  .tablewrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.8}
+  footer a{color:var(--accent);text-decoration:none}
+  .disclaimer{font-size:11.5px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ok);color:#04140c;
+    padding:10px 18px;border-radius:8px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1}
+  .hidden{display:none}
+</style>
+<!-- GoatCounter analytics (nariken) -->
+<script data-goatcounter="https://nariken.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">確定申告レスキュー・キット</div>
+    <h1>メルカリ売上 → 確定申告 仕分けキット</h1>
+    <p>売れた商品を貼るだけ。売上高・販売手数料(10%)・送料を自動で帳簿の形に分解します。</p>
+  </header>
+
+  <div class="card">
+    <div class="step"><span class="n">1</span>メルカリの売れた商品を貼り付け</div>
+    <p class="hint">「取引日・商品名・販売価格（・送料）」の順で貼り付けてください。送料は分かれば入れる、分からなければ空でOK（後で確認できます）。手元にない人は「サンプルを入れる」で試せます。</p>
+    <textarea id="input" placeholder="取引日,商品名,販売価格,送料&#10;2026-02-03,古着 デニムジャケット,3500,700&#10;2026-02-06,中古ゲームソフト,2200,"></textarea>
+    <div class="row">
+      <button id="run">仕分けする</button>
+      <button class="ghost" id="sample">サンプルを入れる</button>
+      <button class="ghost" id="clear">クリア</button>
+    </div>
+  </div>
+
+  <div id="result" class="card hidden">
+    <div class="step"><span class="n">2</span>仕分け結果（あなたが確認するのは送料 <b id="flagInline">0</b> 件だけ）</div>
+    <div class="summary">
+      <span class="pill">取引 <b id="cTotal">0</b> 件</span>
+      <span class="pill accent">売上高 <b id="cSales">¥0</b></span>
+      <span class="pill ok">手数料(自動) <b id="cFee">¥0</b></span>
+      <span class="pill warn">送料 要確認 <b id="cFlag">0</b> 件</span>
+    </div>
+    <p class="hint">⚠️ 販売手数料は <b>販売価格の10%</b> で自動計算。<b>送料だけ</b>あなたが実額を入れてください（黄色＝未入力）。送料が出品者負担でない取引は 0 のままでOK。</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>取引日</th><th>商品名</th><th class="amount">販売価格<br>(売上高)</th><th class="amount">販売手数料<br>(10%)</th><th class="amount">送料<br>(荷造運賃)</th><th>判定</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="row">
+      <button id="export">freeeインポート形式でCSV書き出し</button>
+      <button class="ghost" id="copyPrompt">確定申告の書き方をAIに聞くプロンプトをコピー</button>
+    </div>
+    <p class="hint">CSVは1取引が「売上高 / 販売手数料 / 送料」の3行に分かれて出力されます（帳簿の形）。「AIに聞く」は集計をChatGPT/Claudeに貼って相談したい人向け。</p>
+  </div>
+
+  <footer>
+    <p>このキットは <b>AICO</b>（AIで回す1人会社）が「個人事業主の業務の痛みをAIで解く」過程で作った無料ツールです。<br>
+    Amazon仕入れの経費は <a href="../amazon-kit/">Amazon注文履歴→経費台帳キット</a>／口座連携が止まる人は <a href="../csv-kit/">銀行CSV→勘定科目キット</a> も。<br>
+    ▶ 毎日の実験ログ: <a href="https://x.com/nariken" target="_blank" rel="noopener">@nariken</a>　／　▶ 深掘り: <a href="https://note.com/ken_narita269" target="_blank" rel="noopener">note</a>　／　▶ 受け取り・他のツール: <a href="https://nariken.github.io/narita-ken-hub/" target="_blank" rel="noopener">リンク集</a></p>
+    <p class="disclaimer">※ 入力データはブラウザ内だけで処理され、どこにも送信・保存されません（このページはオフラインでも動きます）。本ツールは帳簿づくりの補助であり、税務上の個別助言ではありません。販売手数料率・送料負担・売上計上時期（発送日/受取確認日）の扱いは取引や規約により異なります。最終判断は税理士等の専門家にご確認ください。</p>
+  </footer>
+</div>
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+// ── メルカリ売上を帳簿の形に分解。透明・オフライン動作。──
+// 思想: 売上高+販売手数料(10%)は自動、変動する送料だけ人間が確認（human-in-the-loop on exceptions only）。
+const FEE_RATE = 0.10;              // メルカリ販売手数料（10%）
+const ACCT_SALES = "売上高";
+const ACCT_FEE   = "支払手数料";
+const ACCT_SHIP  = "荷造運賃";
+
+const SAMPLE = `取引日,商品名,販売価格,送料
+2026-02-03,古着 デニムジャケット,3500,700
+2026-02-06,中古ゲームソフト,2200,210
+2026-02-10,ハンドメイドアクセサリー,1800,
+2026-02-14,書籍 まとめ売り,1200,520
+2026-02-20,スニーカー 24cm,6800,750
+2026-02-25,ベビー服 セット,1500,`;
+
+let rows = [];
+
+function num(s){ if(s==null) return 0; return parseInt(String(s).replace(/[^\d-]/g,""),10)||0; }
+function yen(n){ return "¥"+Math.abs(n).toLocaleString("ja-JP"); }
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  const hasHeader = /取引日|date|商品|品名|販売|価格|売上|金額|送料/i.test(lines[0]);
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+  return dataLines.map(line=>{
+    const c = line.split(",").map(s=>s.trim());
+    const date = c[0]||"";
+    const name = c[1]||"";
+    const price = num(c[2]);
+    // 送料は4列目。無ければ未入力(null)＝要確認。
+    const shipRaw = c.length>=4 ? c[3] : "";
+    const ship = shipRaw==="" ? null : num(shipRaw);
+    return {date, name, price, ship};
+  }).filter(r=>r.name && r.price>0);
+}
+
+function feeOf(price){ return Math.round(price*FEE_RATE); }
+
+function run(){
+  const parsed = parseCSV(document.getElementById("input").value);
+  if(!parsed.length){ alert("売上が読み取れませんでした。取引日,商品名,販売価格 の形式で貼り付けてください。"); return; }
+  rows = parsed.map(r=>({...r, fee:feeOf(r.price)}));
+  render();
+  document.getElementById("result").classList.remove("hidden");
+  document.getElementById("result").scrollIntoView({behavior:"smooth"});
+  const total=rows.length, flag=rows.filter(r=>r.ship===null).length;
+  gcEvent("outcome-mercari-kit-run");
+  gcEvent(`outcome-mercari-kit-auto-${autoBucket(total, total-flag)}`);
+}
+
+function render(){
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  rows.forEach((r,i)=>{
+    const tr = document.createElement("tr");
+    const flag = (r.ship===null);
+    if(flag) tr.className="flag";
+    tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.name)}</td>
+      <td class="amount">${yen(r.price)}</td>
+      <td class="amount">${yen(r.fee)}</td>
+      <td class="amount"><input class="ship" type="number" min="0" step="1" data-i="${i}" value="${r.ship===null?"":r.ship}" placeholder="0"></td>
+      <td><span class="badge ${flag?"need":"auto"}">${flag?"送料未入力":"自動"}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("input.ship").forEach(inp=>{
+    inp.addEventListener("input",e=>{
+      const i=+e.target.dataset.i; const v=e.target.value.trim();
+      rows[i].ship = v==="" ? null : num(v);
+      const flag = (rows[i].ship===null);
+      const tr = e.target.closest("tr");
+      tr.className = flag?"flag":"";
+      tr.querySelector(".badge").className="badge "+(flag?"need":"auto");
+      tr.querySelector(".badge").textContent = flag?"送料未入力":"自動";
+      updateCounts();
+    });
+  });
+  updateCounts();
+}
+
+function updateCounts(){
+  const total=rows.length;
+  const flag=rows.filter(r=>r.ship===null).length;
+  const sales=rows.reduce((s,r)=>s+r.price,0);
+  const fee=rows.reduce((s,r)=>s+r.fee,0);
+  document.getElementById("cTotal").textContent=total;
+  document.getElementById("cFlag").textContent=flag;
+  document.getElementById("flagInline").textContent=flag;
+  document.getElementById("cSales").textContent=yen(sales);
+  document.getElementById("cFee").textContent=yen(fee);
+}
+
+function exportCSV(){
+  const header = ["収支区分","発生日","勘定科目","金額","摘要"];
+  const lines = [];
+  rows.forEach(r=>{
+    lines.push(["収入", r.date, ACCT_SALES, r.price, `"メルカリ売上 ${r.name.replace(/"/g,'""')}"`].join(","));
+    if(r.fee>0) lines.push(["支出", r.date, ACCT_FEE, r.fee, `"メルカリ販売手数料 ${r.name.replace(/"/g,'""')}"`].join(","));
+    const ship = r.ship||0;
+    if(ship>0) lines.push(["支出", r.date, ACCT_SHIP, ship, `"メルカリ送料 ${r.name.replace(/"/g,'""')}"`].join(","));
+  });
+  const csv = "﻿"+[header.join(","),...lines].join("\r\n");
+  const blob = new Blob([csv],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "mercari_uriage_import.csv";
+  a.click();
+  toast("CSVを書き出しました");
+  gcEvent("outcome-mercari-kit-export");
+}
+
+function copyPrompt(){
+  const total=rows.length;
+  const sales=rows.reduce((s,r)=>s+r.price,0);
+  const fee=rows.reduce((s,r)=>s+r.fee,0);
+  const ship=rows.reduce((s,r)=>s+(r.ship||0),0);
+  const prompt = `あなたは日本の個人事業主・副業の確定申告を手伝う経理アシスタントです。
+メルカリの売上を集計しました。確定申告（青色/白色）での扱いと記帳のポイントを教えてください。
+
+- 取引件数: ${total}件
+- 売上高(販売価格の合計): ${yen(sales)}
+- メルカリ販売手数料(10%)の合計: ${yen(fee)}
+- 送料(出品者負担)の合計: ${yen(ship)}
+
+知りたいこと:
+1. 売上高は「販売価格」で計上で合っていますか（手数料・送料を差し引く前の総額か）？
+2. 販売手数料・送料はそれぞれどの勘定科目で経費計上しますか？
+3. 不用品売却（生活用動産）と事業所得の線引きで注意する点は？
+4. 売上計上のタイミング（発送日 / 受取評価日）の考え方は？`;
+  navigator.clipboard.writeText(prompt).then(()=>toast("プロンプトをコピーしました"));
+  gcEvent("outcome-mercari-kit-copyprompt");
+}
+
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+// ── Outcome イベント（匿名集計・PIIなし・入力データは送らない）KEN-407 ──
+function gcEvent(name){
+  try{ if(window.goatcounter && typeof window.goatcounter.count==="function"){ window.goatcounter.count({path:name, title:name, event:true}); } }catch(e){}
+}
+function autoBucket(total, autoN){
+  if(total<=0) return "0";
+  const r=Math.round((autoN/total)*100);
+  if(r>=100) return "100"; if(r>=80) return "80-99"; if(r>=50) return "50-79"; return "0-49";
+}
+
+document.getElementById("run").addEventListener("click",run);
+document.getElementById("sample").addEventListener("click",()=>{document.getElementById("input").value=SAMPLE;});
+document.getElementById("clear").addEventListener("click",()=>{document.getElementById("input").value="";document.getElementById("result").classList.add("hidden");});
+document.getElementById("export").addEventListener("click",exportCSV);
+document.getElementById("copyPrompt").addEventListener("click",copyPrompt);
+</script>
+</body>
+</html>
