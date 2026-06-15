@@ -146,7 +146,33 @@
     </div>
     <div class="a-actions">
       <a class="btn use" href="../csv-kit/" data-ev="labo-use-csv">使う</a>
-      <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
+      <button class="btn recipe" data-recipe="csv">作り方を見る</button>
+    </div>
+    <div class="recipe-panel" id="recipe-csv">
+      <h4>体験: あなた専用の「銀行明細→勘定科目アシスタント」を作る</h4>
+      <div class="recipe-flow">
+        <b>1.</b> 下のテンプレを「コピー」　<b>2.</b> Claude（claude.ai）に貼る　<b>3.</b> 【業種】を書き換え、ネットバンキングの明細を貼る　<b>4.</b> 勘定科目つきの帳簿＆CSVが出る
+      </div>
+      <pre class="tmpl" id="tmpl-csv">あなたは日本の個人事業主の確定申告にくわしい経理アシスタントです。
+私の事業は【ここに業種：例 美容室 / ITコンサル / 小売】です。
+これから銀行明細（日付・摘要・出金/入金）を貼ります。各取引について：
+
+1. 摘要から勘定科目を推定する
+   （通信費 / 旅費交通費 / 水道光熱費 / 支払手数料 / 消耗品費 /
+    接待交際費 / 外注費 / 売上高 など）
+2. 入金は「売上高」か「事業外入金」かを区別する
+3. 私用が疑わしいもの・ATM出金など内容不明は【要確認】
+4. まず見やすい表（日付 ｜ 摘要 ｜ 金額 ｜ 勘定科目 ｜ 判定）で出し、
+   そのあと freeeインポート用に
+   「収支区分, 発生日, 勘定科目, 金額, 摘要」のCSVを出す
+5. 最後に「自動 ○件 / 要確認 ○件」を1行でまとめる
+
+==== ここから下に 銀行明細を貼る ====
+（ネットバンキングのCSVをそのままコピペ）</pre>
+      <div class="copy">
+        <button class="btn use" data-copy="tmpl-csv" data-ev="labo-copy-csv">テンプレをコピー</button>
+        <span class="copied" id="copied-csv">コピーしました ✓</span>
+      </div>
     </div>
   </div>
 
@@ -162,7 +188,36 @@
     </div>
     <div class="a-actions">
       <a class="btn use" href="../mercari-kit/" data-ev="labo-use-mercari">使う</a>
-      <button class="btn recipe soon" disabled>作り方を見る（近日）</button>
+      <button class="btn recipe" data-recipe="mercari">作り方を見る</button>
+    </div>
+    <div class="recipe-panel" id="recipe-mercari">
+      <h4>体験: メルカリ売上を「帳簿の形」に分解するアシスタントを作る</h4>
+      <div class="recipe-flow">
+        <b>1.</b> 下のテンプレを「コピー」　<b>2.</b> Claude（claude.ai）に貼る　<b>3.</b> メルカリの売上（取引日・商品名・販売価格・送料）を貼る　<b>4.</b> 売上高/手数料/送料に分解された帳簿＆CSVが出る
+      </div>
+      <pre class="tmpl" id="tmpl-mercari">あなたは日本の確定申告にくわしい経理アシスタントです。
+メルカリの売上を確定申告の帳簿の形に分解してください。
+これから「取引日・商品名・販売価格（・送料）」を貼ります。各取引を：
+
+1. 売上高（販売価格の全額）
+2. 販売手数料（販売価格の10%）→ 勘定科目「支払手数料」
+3. 送料（出品者負担分）→ 勘定科目「荷造運賃」
+   ※送料が空欄の取引は【要確認】（実額をあとで入れる）
+の3行に分けて出してください。
+
+4. まず見やすい表（取引日 ｜ 商品名 ｜ 売上高 ｜ 手数料(10%) ｜ 送料 ｜ 判定）、
+   そのあと freeeインポート用に「発生日, 勘定科目, 金額, 摘要」のCSVを出す
+5. 最後に「売上高合計 ¥○ / 手数料合計 ¥○ / 送料未入力 ○件」をまとめる
+
+※生活用品（不用品）の売却は原則非課税。営利目的で反復・棚卸資産なら
+  事業所得。迷う取引は【要確認】にしてください。
+
+==== ここから下に メルカリの売上を貼る ====
+（取引日,商品名,販売価格,送料）</pre>
+      <div class="copy">
+        <button class="btn use" data-copy="tmpl-mercari" data-ev="labo-copy-mercari">テンプレをコピー</button>
+        <span class="copied" id="copied-mercari">コピーしました ✓</span>
+      </div>
     </div>
   </div>
 
