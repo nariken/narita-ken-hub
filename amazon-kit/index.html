@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Amazon注文履歴 → 経費台帳キット｜確定申告レスキュー</title>
-<meta name="description" content="Amazonの領収書を1枚ずつダウンロードする地獄を終わらせる。注文履歴を貼るだけで、商品名から勘定科目を自動仕分け。事業用か迷うものだけ"要確認"フラグ。freeeインポート形式の経費台帳CSVに書き出せます。">
+<meta name="description" content="Amazonの領収書を1枚ずつダウンロードする地獄を終わらせる。注文履歴を貼るだけで、商品名から勘定科目を自動仕分け。事業用か迷うものだけ&quot;要確認&quot;フラグ。freeeインポート形式の経費台帳CSVに書き出せます。">
 <style>
   :root{
     --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
@@ -27,6 +27,7 @@
   button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:700;
     cursor:pointer;font-size:14px;font-family:var(--font)}
   button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  button:disabled{opacity:.5;cursor:not-allowed}
   .hint{color:var(--muted);font-size:12.5px}
   .summary{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
   .pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px}
@@ -50,6 +51,12 @@
     padding:10px 18px;border-radius:8px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
   .toast.show{opacity:1}
   .hidden{display:none}
+  /* 受け皿(オプトイン)スロット — 既定は非表示。config.optin 設定時のみ表示 */
+  .optin{background:var(--panel2);border:1px dashed var(--accent);border-radius:var(--radius);padding:16px;margin:16px 0}
+  .optin h3{margin:0 0 6px;font-size:15px}
+  .optin p{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+  .optin .row input[type=email]{flex:1;min-width:180px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--font)}
+  .optin label.consent{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);margin-top:8px}
 </style>
 <!-- GoatCounter analytics (nariken) -->
 <script data-goatcounter="https://nariken.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -57,15 +64,15 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="kicker">確定申告レスキュー・キット</div>
-    <h1>Amazon注文履歴 → 経費台帳キット</h1>
-    <p>領収書を1枚ずつDLする地獄を終わらせる。注文履歴を貼るだけで、商品名から勘定科目を自動仕分け。</p>
+    <div class="kicker" id="ui-kicker"></div>
+    <h1 id="ui-h1"></h1>
+    <p id="ui-subtitle"></p>
   </header>
 
   <div class="card">
-    <div class="step"><span class="n">1</span>Amazonの注文履歴を貼り付け</div>
-    <p class="hint">Amazonの「注文履歴」や注文履歴レポートのCSVを貼り付け（注文日・商品名・金額の列があればOK）。手元にない人は「サンプルを入れる」で試せます。</p>
-    <textarea id="input" placeholder="注文日,商品名,金額&#10;2026-02-04,Anker USB-C ケーブル,1980&#10;2026-02-06,書籍 実践Rust,3520"></textarea>
+    <div class="step"><span class="n">1</span><span id="ui-step1"></span></div>
+    <p class="hint" id="ui-inputHint"></p>
+    <textarea id="input"></textarea>
     <div class="row">
       <button id="run">仕分けする</button>
       <button class="ghost" id="sample">サンプルを入れる</button>
@@ -76,98 +83,288 @@
   <div id="result" class="card hidden">
     <div class="step"><span class="n">2</span>仕分け結果（あなたが見るのは <b id="flagInline">0</b> 件だけ）</div>
     <div class="summary">
-      <span class="pill">注文 <b id="cTotal">0</b> 件</span>
+      <span class="pill"><span id="ui-itemNoun"></span> <b id="cTotal">0</b> 件</span>
       <span class="pill ok">自動仕分け <b id="cAuto">0</b> 件</span>
       <span class="pill warn">要確認 <b id="cFlag">0</b> 件</span>
     </div>
-    <p class="hint">⚠️ 黄色の「要確認」行＝事業用か私用か・高額な資産かの判断が要る注文。ここだけ科目を選び直してください（それ以外は触らなくてOK）。</p>
+    <p class="hint" id="ui-resultHint"></p>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>注文日</th><th>商品名</th><th class="amount">金額</th><th>勘定科目</th><th>判定</th></tr></thead>
+        <thead><tr>
+          <th id="ui-colDate"></th><th id="ui-colLabel"></th>
+          <th class="amount" id="ui-colAmount"></th><th id="ui-colCat"></th><th id="ui-colJudge"></th>
+        </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
     <div class="row">
       <button id="export">freeeインポート形式でCSV書き出し</button>
-      <button class="ghost" id="copyPrompt">迷う注文をAIに丸投げするプロンプトをコピー</button>
+      <button class="ghost" id="copyPrompt">残りをAIに丸投げするプロンプトをコピー</button>
     </div>
     <p class="hint">「AIに丸投げ」は、要確認だけをChatGPT/Claudeに貼って判断させたい人向け。コピーした文を貼るだけで使えます。</p>
   </div>
 
+  <div id="optin-slot"></div>
+
   <footer>
     <p>このキットは <b>AICO</b>（AIで回す1人会社）が「個人事業主の業務の痛みをAIで解く」過程で作った無料ツールです。<br>
-    確定申告の口座連携が止まる人は <a href="../csv-kit/">銀行CSV→勘定科目 仕分けキット</a> も。<br>
+    <span id="ui-footerExtra"></span>
     ▶ 毎日の実験ログ: <a href="https://x.com/nariken" target="_blank" rel="noopener">@nariken</a>　／　▶ 深掘り: <a href="https://note.com/ken_narita269" target="_blank" rel="noopener">note</a>　／　▶ 受け取り・他のツール: <a href="https://nariken.github.io/narita-ken-hub/" target="_blank" rel="noopener">リンク集</a></p>
-    <p class="disclaimer">※ 入力データはブラウザ内だけで処理され、どこにも送信・保存されません（このページはオフラインでも動きます）。本ツールは経費台帳（帳簿）づくりの補助であり、税務上の個別助言ではありません。領収書・購入明細そのものは法定保存期間の保管が必要です。勘定科目・事業按分の最終判断は税理士等の専門家にご確認ください。</p>
+    <p class="disclaimer" id="ui-disclaimer"></p>
   </footer>
 </div>
 <div class="toast" id="toast">コピーしました</div>
 
 <script>
-// ── 勘定科目の推定ルール（商品名キーワード→科目）。透明・編集可能・オフライン動作。──
-// 思想: 商品名から事業用の定番を自動仕分けし、私用か迷うもの・高額資産だけ「要確認」で人間に回す。
-const RULES = [
-  {cat:"新聞図書費", kw:["書籍","技術書","参考書","kindle","コミック","新聞","雑誌","文庫","単行本"]},
-  {cat:"消耗品費",   kw:["ケーブル","usb","hdmi","マウス","キーボード","アダプタ","充電器","電池","乾電池","コピー用紙","用紙","ペン","ノート","文具","インク","トナー","sdカード","ハブ","スタンド","マウスパッド","クリーナー"]},
-  {cat:"通信費",     kw:["microsoft 365","office 365","adobe","subscription","サブスク","ソフト","ライセンス","ドメイン","vpn","クラウド"]},
-  {cat:"工具器具備品", kw:["モニター","ディスプレイ","webカメラ","ウェブカメラ","マイク","ヘッドセット","ssd","ハードディスク","hdd","ルーター","プリンタ","スキャナ","椅子","チェア","デスク"]},
-  {cat:"荷造運賃",   kw:["梱包","封筒","ダンボール","段ボール","緩衝材","プチプチ","テープ","ラベル"]},
-];
-// 私用の可能性が高い＝必ず要確認（事業按分の判断が要る）
-const PRIVATE_HINTS = ["プロテイン","サプリ","食品","お菓子","飲料","水 ","おむつ","おもちゃ","ゲーム","化粧品","シャンプー","洗剤","衣類","シャツ","靴","マスク","日用品","ペット"];
-const CATEGORIES = ["消耗品費","新聞図書費","通信費","工具器具備品","荷造運賃","広告宣伝費","会議費","旅費交通費","支払手数料","外注費","仕入高","事業主貸","要確認"];
-const FIXED_ASSET_THRESHOLD = 100000; // 10万円以上は固定資産/減価償却の判定が要る→要確認
+// ============================================================================
+// Outcome Tool Factory — 共通ランタイム（KEN-407）
+// ツール別の値はすべて下の TOOL 設定（config JSON）から注入される。
+// このファイルはテンプレート。生成は scripts/tool_factory.py 経由。手で編集しない。
+// ============================================================================
+const TOOL = {
+  "slug": "amazon-kit",
+  "lang": "ja",
+  "title": "Amazon注文履歴 → 経費台帳キット｜確定申告レスキュー",
+  "metaDescription": "Amazonの領収書を1枚ずつダウンロードする地獄を終わらせる。注文履歴を貼るだけで、商品名から勘定科目を自動仕分け。事業用か迷うものだけ\"要確認\"フラグ。freeeインポート形式の経費台帳CSVに書き出せます。",
+  "ui": {
+    "kicker": "確定申告レスキュー・キット",
+    "h1": "Amazon注文履歴 → 経費台帳キット",
+    "subtitle": "領収書を1枚ずつDLする地獄を終わらせる。注文履歴を貼るだけで、商品名から勘定科目を自動仕分け。",
+    "step1": "Amazonの注文履歴を貼り付け",
+    "inputHint": "Amazonの「注文履歴」や注文履歴レポートのCSVを貼り付け（注文日・商品名・金額の列があればOK）。手元にない人は「サンプルを入れる」で試せます。",
+    "placeholder": "注文日,商品名,金額\n2026-02-04,Anker USB-C ケーブル,1980\n2026-02-06,書籍 実践Rust,3520",
+    "itemNoun": "注文",
+    "resultHint": "⚠️ 黄色の「要確認」行＝事業用か私用か・高額な資産かの判断が要る注文。ここだけ科目を選び直してください（それ以外は触らなくてOK）。",
+    "cols": [
+      "注文日",
+      "商品名",
+      "金額",
+      "勘定科目",
+      "判定"
+    ],
+    "footerExtra": "確定申告の口座連携が止まる人は <a href=\"../csv-kit/\">銀行CSV→勘定科目 仕分けキット<\/a> も。<br>",
+    "disclaimer": "※ 入力データはブラウザ内だけで処理され、どこにも送信・保存されません（このページはオフラインでも動きます）。本ツールは経費台帳（帳簿）づくりの補助であり、税務上の個別助言ではありません。領収書・購入明細そのものは法定保存期間の保管が必要です。勘定科目・事業按分の最終判断は税理士等の専門家にご確認ください。"
+  },
+  "logic": {
+    "parseMode": "amount_fallback",
+    "headerRegex": "注文日|date|商品|品名|金額|価格|注文番号",
+    "rules": [
+      {
+        "cat": "新聞図書費",
+        "kw": [
+          "書籍",
+          "技術書",
+          "参考書",
+          "kindle",
+          "コミック",
+          "新聞",
+          "雑誌",
+          "文庫",
+          "単行本"
+        ]
+      },
+      {
+        "cat": "消耗品費",
+        "kw": [
+          "ケーブル",
+          "usb",
+          "hdmi",
+          "マウス",
+          "キーボード",
+          "アダプタ",
+          "充電器",
+          "電池",
+          "乾電池",
+          "コピー用紙",
+          "用紙",
+          "ペン",
+          "ノート",
+          "文具",
+          "インク",
+          "トナー",
+          "sdカード",
+          "ハブ",
+          "スタンド",
+          "マウスパッド",
+          "クリーナー"
+        ]
+      },
+      {
+        "cat": "通信費",
+        "kw": [
+          "microsoft 365",
+          "office 365",
+          "adobe",
+          "subscription",
+          "サブスク",
+          "ソフト",
+          "ライセンス",
+          "ドメイン",
+          "vpn",
+          "クラウド"
+        ]
+      },
+      {
+        "cat": "工具器具備品",
+        "kw": [
+          "モニター",
+          "ディスプレイ",
+          "webカメラ",
+          "ウェブカメラ",
+          "マイク",
+          "ヘッドセット",
+          "ssd",
+          "ハードディスク",
+          "hdd",
+          "ルーター",
+          "プリンタ",
+          "スキャナ",
+          "椅子",
+          "チェア",
+          "デスク"
+        ]
+      },
+      {
+        "cat": "荷造運賃",
+        "kw": [
+          "梱包",
+          "封筒",
+          "ダンボール",
+          "段ボール",
+          "緩衝材",
+          "プチプチ",
+          "テープ",
+          "ラベル"
+        ]
+      }
+    ],
+    "categories": [
+      "消耗品費",
+      "新聞図書費",
+      "通信費",
+      "工具器具備品",
+      "荷造運賃",
+      "広告宣伝費",
+      "会議費",
+      "旅費交通費",
+      "支払手数料",
+      "外注費",
+      "仕入高",
+      "事業主貸",
+      "要確認"
+    ],
+    "privateHints": {
+      "keywords": [
+        "プロテイン",
+        "サプリ",
+        "食品",
+        "お菓子",
+        "飲料",
+        "水 ",
+        "おむつ",
+        "おもちゃ",
+        "ゲーム",
+        "化粧品",
+        "シャンプー",
+        "洗剤",
+        "衣類",
+        "シャツ",
+        "靴",
+        "マスク",
+        "日用品",
+        "ペット"
+      ],
+      "category": "事業主貸",
+      "reason": "私用の可能性=事業按分の判断が必要"
+    },
+    "assetThreshold": {
+      "amount": 100000,
+      "category": "工具器具備品",
+      "reason": "10万円以上=固定資産/減価償却の判定が必要"
+    },
+    "unknownCategory": "要確認",
+    "unknownReason": "商品名から科目を判定できず",
+    "yenSignedNegative": false,
+    "exportLabelPrefix": "Amazon ",
+    "exportTypeBySign": false,
+    "exportFilename": "amazon_keihi_import.csv",
+    "promptIntro": "あなたは日本の個人事業主の確定申告を手伝う経理アシスタントです。\n以下のAmazon注文について、事業経費なら最も適切な勘定科目を、私用なら「事業主貸」を付けてください。10万円以上は固定資産の可能性に触れ、事業按分が要りそうなものは確認点を1行添えてください。",
+    "promptFormat": "出力形式: 「注文日 / 商品名 / 勘定科目 / （按分や資産計上の確認点）」",
+    "sample": "注文日,商品名,金額\n2026-02-04,Anker USB-C ケーブル 2本セット,1980\n2026-02-06,書籍「実践Rustプログラミング」,3520\n2026-02-08,ロジクール ワイヤレスマウス,2980\n2026-02-11,コピー用紙 A4 2500枚,3200\n2026-02-13,HHKB Professional キーボード,36850\n2026-02-15,プロテイン 1kg チョコ味,4500\n2026-02-18,Kindle版「確定申告がわかる本」,1200\n2026-02-20,モバイルモニター 15.6インチ,25800\n2026-02-22,おむつ ビッグ 大容量パック,3800\n2026-02-25,HDMIケーブル 2m,990\n2026-02-27,Microsoft 365 Personal 1年版,12984\n2026-02-28,業務用プリンタ A3対応,128000",
+    "parseErrorMsg": "注文履歴が読み取れませんでした。注文日,商品名,金額 の形式で貼り付けてください。"
+  },
+  "optin": null
+};
+const T = TOOL.logic;
+const UI = TOOL.ui;
 
-const SAMPLE = `注文日,商品名,金額
-2026-02-04,Anker USB-C ケーブル 2本セット,1980
-2026-02-06,書籍「実践Rustプログラミング」,3520
-2026-02-08,ロジクール ワイヤレスマウス,2980
-2026-02-11,コピー用紙 A4 2500枚,3200
-2026-02-13,HHKB Professional キーボード,36850
-2026-02-15,プロテイン 1kg チョコ味,4500
-2026-02-18,Kindle版「確定申告がわかる本」,1200
-2026-02-20,モバイルモニター 15.6インチ,25800
-2026-02-22,おむつ ビッグ 大容量パック,3800
-2026-02-25,HDMIケーブル 2m,990
-2026-02-27,Microsoft 365 Personal 1年版,12984
-2026-02-28,業務用プリンタ A3対応,128000`;
+// ── Outcome イベント（匿名集計・PIIなし） ───────────────────────────────────
+// ユーザーの入力データは送信しない（従来どおりブラウザ内処理）。
+// 送るのは「どの課題ツールが、どれだけ自動化の成果を出したか」という匿名の集計シグナルのみ。
+// = Decision+Outcome モートの「測ったDelta」をツール層で拾う蛇口（設計=outcome_tool_factory_design.md）。
+function gcEvent(name){
+  try{
+    if(window.goatcounter && typeof window.goatcounter.count === "function"){
+      window.goatcounter.count({path:name, title:name, event:true});
+    }
+  }catch(e){/* analytics 失敗はツール本体に影響させない */}
+}
+function autoBucket(total, autoN){
+  if(total<=0) return "0";
+  const r = Math.round((autoN/total)*100);
+  if(r>=100) return "100";
+  if(r>=80) return "80-99";
+  if(r>=50) return "50-79";
+  return "0-49";
+}
 
 let rows = [];
+
+function num(s){ if(!s) return 0; return parseInt(String(s).replace(/[^\d-]/g,""),10)||0; }
+function yen(n){ const s=Math.abs(n).toLocaleString("ja-JP"); return (T.yenSignedNegative && n<0 ? "+" : "")+"¥"+s; }
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function parseCSV(text){
   const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
   if(!lines.length) return [];
-  const first = lines[0];
-  const hasHeader = /注文日|date|商品|品名|金額|価格|注文番号/i.test(first);
+  const hasHeader = new RegExp(T.headerRegex, "i").test(lines[0]);
   const dataLines = hasHeader ? lines.slice(1) : lines;
   return dataLines.map(line=>{
     const c = line.split(",").map(s=>s.trim());
-    // 列推定: [注文日, 商品名, 金額] / 金額は最後の数値列をフォールバックで拾う
     const date = c[0]||"";
-    const name = c[1]||"";
-    let amount = num(c[2]);
-    if(!amount){ for(let i=c.length-1;i>=2;i--){ if(num(c[i])){ amount=num(c[i]); break; } } }
-    return {date, name, amount};
-  }).filter(r=>r.name);
+    const label = c[1]||"";
+    let amount = 0;
+    if(T.parseMode === "out_in"){
+      if(c.length>=4){ amount = num(c[2]) || -num(c[3]); } else { amount = num(c[2]); }
+    } else { // amount_fallback
+      amount = num(c[2]);
+      if(!amount){ for(let i=c.length-1;i>=2;i--){ if(num(c[i])){ amount=num(c[i]); break; } } }
+    }
+    return {date, label, amount};
+  }).filter(r=>r.label);
 }
-function num(s){ if(!s) return 0; return parseInt(String(s).replace(/[^\d-]/g,""),10)||0; }
-function yen(n){ return "¥"+Math.abs(n).toLocaleString("ja-JP"); }
 
-function categorize(name, amount){
-  const d = name.toLowerCase();
-  if(amount>=FIXED_ASSET_THRESHOLD) return {cat:"工具器具備品", flag:true, reason:`10万円以上=固定資産/減価償却の判定が必要`};
-  for(const p of PRIVATE_HINTS){ if(d.includes(p.toLowerCase().trim())) return {cat:"事業主貸", flag:true, reason:`私用の可能性=事業按分の判断が必要`}; }
-  for(const r of RULES){ for(const k of r.kw){ if(d.includes(k.toLowerCase())) return {cat:r.cat, flag:false, reason:`「${k}」に一致`}; } }
-  return {cat:"要確認", flag:true, reason:"商品名から科目を判定できず"};
+function categorize(label, amount){
+  const d = label.toLowerCase();
+  if(T.negativeIncome && amount<0) return {cat:T.negativeIncome.category, flag:true, reason:T.negativeIncome.reason};
+  if(T.assetThreshold && amount>=T.assetThreshold.amount) return {cat:T.assetThreshold.category, flag:true, reason:T.assetThreshold.reason};
+  if(T.forceFlag){ for(const f of T.forceFlag.keywords){ if(d.includes(f.toLowerCase())) return {cat:T.forceFlag.category, flag:true, reason:T.forceFlag.reasonTpl.replace("{kw}",f)}; } }
+  if(T.privateHints){ for(const p of T.privateHints.keywords){ if(d.includes(p.toLowerCase().trim())) return {cat:T.privateHints.category, flag:true, reason:T.privateHints.reason}; } }
+  for(const r of T.rules){ for(const k of r.kw){ if(d.includes(k.toLowerCase())) return {cat:r.cat, flag:false, reason:`「${k}」に一致`}; } }
+  return {cat:T.unknownCategory, flag:true, reason:T.unknownReason};
 }
 
 function run(){
   const parsed = parseCSV(document.getElementById("input").value);
-  if(!parsed.length){ alert("注文履歴が読み取れませんでした。注文日,商品名,金額 の形式で貼り付けてください。"); return; }
-  rows = parsed.map(r=>{ const g=categorize(r.name,r.amount); return {...r, cat:g.cat, flag:g.flag, reason:g.reason}; });
+  if(!parsed.length){ alert(T.parseErrorMsg); return; }
+  rows = parsed.map(r=>{ const g=categorize(r.label,r.amount); return {...r, cat:g.cat, flag:g.flag, reason:g.reason}; });
   render();
   document.getElementById("result").classList.remove("hidden");
   document.getElementById("result").scrollIntoView({behavior:"smooth"});
+  // Outcome: ツールが課題を解いた状態変化（自動化率）を匿名で記録
+  const total=rows.length, flag=rows.filter(r=>r.flag).length, autoN=total-flag;
+  gcEvent(`outcome-${TOOL.slug}-run`);
+  gcEvent(`outcome-${TOOL.slug}-auto-${autoBucket(total, autoN)}`);
 }
 
 function render(){
@@ -176,8 +373,8 @@ function render(){
   rows.forEach((r,i)=>{
     const tr = document.createElement("tr");
     if(r.flag) tr.className="flag";
-    const opts = CATEGORIES.map(c=>`<option ${c===r.cat?"selected":""}>${c}</option>`).join("");
-    tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.name)}</td>
+    const opts = T.categories.map(c=>`<option ${c===r.cat?"selected":""}>${c}</option>`).join("");
+    tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.label)}</td>
       <td class="amount">${yen(r.amount)}</td>
       <td><select data-i="${i}">${opts}</select></td>
       <td><span class="badge ${r.flag?"need":"auto"}">${r.flag?"要確認":"自動"}</span></td>`;
@@ -195,6 +392,7 @@ function render(){
   });
   updateCounts();
 }
+
 function updateCounts(){
   const total=rows.length, flag=rows.filter(r=>r.flag).length;
   document.getElementById("cTotal").textContent=total;
@@ -202,41 +400,85 @@ function updateCounts(){
   document.getElementById("cFlag").textContent=flag;
   document.getElementById("flagInline").textContent=flag;
 }
-function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function exportCSV(){
   const header = ["収支区分","発生日","勘定科目","金額","摘要"];
-  const lines = rows.map(r=>[
-    "支出", r.date, r.cat, Math.abs(r.amount), `"Amazon ${r.name.replace(/"/g,'""')}"`
-  ].join(","));
+  const lines = rows.map(r=>{
+    const type = (T.exportTypeBySign && r.amount<0) ? "収入":"支出";
+    const note = `"${(T.exportLabelPrefix||"")}${r.label.replace(/"/g,'""')}"`;
+    return [type, r.date, r.cat, Math.abs(r.amount), note].join(",");
+  });
   const csv = "﻿"+[header.join(","),...lines].join("\r\n");
   const blob = new Blob([csv],{type:"text/csv"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "amazon_keihi_import.csv";
+  a.download = T.exportFilename;
   a.click();
   toast("CSVを書き出しました");
+  gcEvent(`outcome-${TOOL.slug}-export`); // Outcome: 価値を受け取り完了（主要コンバージョン）
 }
+
 function copyPrompt(){
   const need = rows.filter(r=>r.flag);
-  if(!need.length){ toast("要確認の注文はありません"); return; }
-  const list = need.map(r=>`- ${r.date} / ${r.name} / ${yen(r.amount)}`).join("\n");
-  const prompt = `あなたは日本の個人事業主の確定申告を手伝う経理アシスタントです。
-以下のAmazon注文について、事業経費なら最も適切な勘定科目を、私用なら「事業主貸」を付けてください。10万円以上は固定資産の可能性に触れ、事業按分が要りそうなものは確認点を1行添えてください。
-
-注文:
-${list}
-
-出力形式: 「注文日 / 商品名 / 勘定科目 / （按分や資産計上の確認点）」`;
+  if(!need.length){ toast(`要確認の${UI.itemNoun}はありません`); return; }
+  const list = need.map(r=>`- ${r.date} / ${r.label} / ${yen(r.amount)}`).join("\n");
+  const prompt = `${T.promptIntro}\n\n${UI.itemNoun}:\n${list}\n\n${T.promptFormat}`;
   navigator.clipboard.writeText(prompt).then(()=>toast("プロンプトをコピーしました"));
+  gcEvent(`outcome-${TOOL.slug}-copyprompt`);
 }
+
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
 
-document.getElementById("run").addEventListener("click",run);
-document.getElementById("sample").addEventListener("click",()=>{document.getElementById("input").value=SAMPLE;});
-document.getElementById("clear").addEventListener("click",()=>{document.getElementById("input").value="";document.getElementById("result").classList.add("hidden");});
-document.getElementById("export").addEventListener("click",exportCSV);
-document.getElementById("copyPrompt").addEventListener("click",copyPrompt);
+// ── 受け皿(オプトイン)スロット — config.optin がある場合のみ描画 ───────────────
+// 既定(null)では何も描画しない＝KPI③受け皿は「前さばき(設計のみ)」。
+// 6/19後にバックエンドGoが出たら config.optin を設定して有効化する。
+function renderOptin(){
+  const o = TOOL.optin;
+  if(!o) return;
+  const slot = document.getElementById("optin-slot");
+  slot.innerHTML = `
+    <div class="optin">
+      <h3>${escapeHtml(o.heading||"")}</h3>
+      <p>${escapeHtml(o.body||"")}</p>
+      <form id="optin-form" ${o.action?`action="${o.action}" method="post"`:""}>
+        <div class="row">
+          <input type="email" name="email" placeholder="${escapeHtml(o.placeholder||"メールアドレス")}" required>
+          <button type="submit">${escapeHtml(o.cta||"受け取る")}</button>
+        </div>
+        <label class="consent"><input type="checkbox" name="consent" required>
+          <span>${escapeHtml(o.consent||"上記の目的での連絡に同意します。")}</span></label>
+      </form>
+    </div>`;
+}
+
+function boot(){
+  // 文言の注入（config JSON が単一の正）
+  document.documentElement.lang = TOOL.lang || "ja";
+  document.getElementById("ui-kicker").textContent = UI.kicker;
+  document.getElementById("ui-h1").textContent = UI.h1;
+  document.getElementById("ui-subtitle").textContent = UI.subtitle;
+  document.getElementById("ui-step1").textContent = UI.step1;
+  document.getElementById("ui-inputHint").textContent = UI.inputHint;
+  document.getElementById("input").setAttribute("placeholder", UI.placeholder);
+  document.getElementById("ui-itemNoun").textContent = UI.itemNoun;
+  document.getElementById("ui-resultHint").textContent = UI.resultHint;
+  document.getElementById("ui-colDate").textContent = UI.cols[0];
+  document.getElementById("ui-colLabel").textContent = UI.cols[1];
+  document.getElementById("ui-colAmount").textContent = UI.cols[2];
+  document.getElementById("ui-colCat").textContent = UI.cols[3];
+  document.getElementById("ui-colJudge").textContent = UI.cols[4];
+  // footerExtra は <a> を含むため innerHTML（生成時に信頼できる config のみ）
+  document.getElementById("ui-footerExtra").innerHTML = UI.footerExtra || "";
+  document.getElementById("ui-disclaimer").textContent = UI.disclaimer;
+  renderOptin();
+
+  document.getElementById("run").addEventListener("click",run);
+  document.getElementById("sample").addEventListener("click",()=>{document.getElementById("input").value=T.sample;});
+  document.getElementById("clear").addEventListener("click",()=>{document.getElementById("input").value="";document.getElementById("result").classList.add("hidden");});
+  document.getElementById("export").addEventListener("click",exportCSV);
+  document.getElementById("copyPrompt").addEventListener("click",copyPrompt);
+}
+document.addEventListener("DOMContentLoaded", boot);
 </script>
 </body>
 </html>

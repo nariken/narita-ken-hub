@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>銀行CSV → 勘定科目 仕分けキット｜確定申告レスキュー</title>
-<meta name="description" content="確定申告前に口座連携が止まっても大丈夫。銀行のCSVを貼るだけで、AIの考え方で勘定科目を自動仕分け。自信のない取引だけ"要確認"フラグを立てるので、あなたが見るのは数件だけ。freeeインポート形式で書き出せます。">
+<meta name="description" content="確定申告前に口座連携が止まっても大丈夫。銀行のCSVを貼るだけで、AIの考え方で勘定科目を自動仕分け。自信のない取引だけ&quot;要確認&quot;フラグを立てるので、あなたが見るのは数件だけ。freeeインポート形式で書き出せます。">
 <style>
   :root{
     --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
@@ -51,6 +51,12 @@
     padding:10px 18px;border-radius:8px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
   .toast.show{opacity:1}
   .hidden{display:none}
+  /* 受け皿(オプトイン)スロット — 既定は非表示。config.optin 設定時のみ表示 */
+  .optin{background:var(--panel2);border:1px dashed var(--accent);border-radius:var(--radius);padding:16px;margin:16px 0}
+  .optin h3{margin:0 0 6px;font-size:15px}
+  .optin p{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+  .optin .row input[type=email]{flex:1;min-width:180px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--font)}
+  .optin label.consent{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);margin-top:8px}
 </style>
 <!-- GoatCounter analytics (nariken) -->
 <script data-goatcounter="https://nariken.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -58,15 +64,15 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="kicker">確定申告レスキュー・キット</div>
-    <h1>銀行CSV → 勘定科目 仕分けキット</h1>
-    <p>口座連携が止まっても大丈夫。CSVを貼るだけで自動仕分け、"自信のない取引"だけフラグを立てます。</p>
+    <div class="kicker" id="ui-kicker"></div>
+    <h1 id="ui-h1"></h1>
+    <p id="ui-subtitle"></p>
   </header>
 
   <div class="card">
-    <div class="step"><span class="n">1</span>銀行の取引CSVを貼り付け</div>
-    <p class="hint">ネットバンキングからダウンロードした明細CSVを貼り付けてください（日付・摘要・金額の列があればOK）。手元にない人は「サンプルを入れる」で試せます。</p>
-    <textarea id="input" placeholder="日付,摘要,出金,入金&#10;2026-02-10,アマゾンウェブサービス,3300,&#10;2026-02-11,スターバックス渋谷,680,"></textarea>
+    <div class="step"><span class="n">1</span><span id="ui-step1"></span></div>
+    <p class="hint" id="ui-inputHint"></p>
+    <textarea id="input"></textarea>
     <div class="row">
       <button id="run">仕分けする</button>
       <button class="ghost" id="sample">サンプルを入れる</button>
@@ -77,14 +83,17 @@
   <div id="result" class="card hidden">
     <div class="step"><span class="n">2</span>仕分け結果（あなたが見るのは <b id="flagInline">0</b> 件だけ）</div>
     <div class="summary">
-      <span class="pill">取引 <b id="cTotal">0</b> 件</span>
+      <span class="pill"><span id="ui-itemNoun"></span> <b id="cTotal">0</b> 件</span>
       <span class="pill ok">自動仕分け <b id="cAuto">0</b> 件</span>
       <span class="pill warn">要確認 <b id="cFlag">0</b> 件</span>
     </div>
-    <p class="hint">⚠️ 黄色の「要確認」行＝AIの考え方でも判断しきれない取引。ここだけ科目を選び直してください（それ以外は触らなくてOK）。</p>
+    <p class="hint" id="ui-resultHint"></p>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>日付</th><th>摘要</th><th class="amount">金額</th><th>勘定科目</th><th>判定</th></tr></thead>
+        <thead><tr>
+          <th id="ui-colDate"></th><th id="ui-colLabel"></th>
+          <th class="amount" id="ui-colAmount"></th><th id="ui-colCat"></th><th id="ui-colJudge"></th>
+        </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
@@ -95,87 +104,322 @@
     <p class="hint">「AIに丸投げ」は、要確認だけをChatGPT/Claudeに貼って判断させたい人向け。コピーした文を貼るだけで使えます。</p>
   </div>
 
+  <div id="optin-slot"></div>
+
   <footer>
     <p>このキットは <b>AICO</b>（AIで回す1人会社）が「個人事業主の業務の痛みをAIで解く」過程で作った無料ツールです。<br>
+    <span id="ui-footerExtra"></span>
     ▶ 毎日の実験ログ: <a href="https://x.com/nariken" target="_blank" rel="noopener">@nariken</a>　／　▶ 深掘り: <a href="https://note.com/ken_narita269" target="_blank" rel="noopener">note</a>　／　▶ 受け取り・他のツール: <a href="https://nariken.github.io/narita-ken-hub/" target="_blank" rel="noopener">リンク集</a></p>
-    <p class="disclaimer">※ 入力データはブラウザ内だけで処理され、どこにも送信・保存されません（このページはオフラインでも動きます）。本ツールは一般的な業務効率化のための情報提供であり、税務上の個別助言ではありません。勘定科目の最終判断は税理士等の専門家にご確認ください。</p>
+    <p class="disclaimer" id="ui-disclaimer"></p>
   </footer>
 </div>
 <div class="toast" id="toast">コピーしました</div>
 
 <script>
-// ── 勘定科目の推定ルール（キーワード→科目）。透明・編集可能・オフライン動作。──
-// 思想: 既知パターンは自動で8割片付け、未知/曖昧は「要確認」に落として人間に回す。
-const RULES = [
-  {cat:"通信費",     kw:["アマゾンウェブ","aws","さくらインターネット","エックスサーバー","xserver","ドコモ","docomo","au","softbank","ソフトバンク","楽天モバイル","ocn","biglobe","zoom","ズーム","slack","google workspace","microsoft 365","ms365"]},
-  {cat:"消耗品費",   kw:["adobe","アドビ","notion","figma","canva","github","openai","anthropic","claude","chatgpt","apple.com","app store","アップル"]},
-  {cat:"会議費",     kw:["スターバックス","スタバ","ドトール","タリーズ","コメダ","ルノアール","starbucks","cafe","カフェ"]},
-  {cat:"旅費交通費", kw:["jr","スイカ","suica","pasmo","パスモ","タクシー","ana","jal","新幹線","ガソリン","eneos","エネオス","出光","高速","etc"]},
-  {cat:"荷造運賃",   kw:["ヤマト","クロネコ","佐川","日本郵便","ゆうパック","letterpack","レターパック"]},
-  {cat:"水道光熱費", kw:["電力","でんき","電気","東京電力","関西電力","ガス","水道"]},
-  {cat:"支払手数料", kw:["freee","マネーフォワード","stripe","ストライプ","paypal","ペイパル","振込手数料","手数料"]},
-  {cat:"広告宣伝費", kw:["google ads","google広告","meta","facebook広告","x ads","yahoo広告","リスティング"]},
-  {cat:"地代家賃",   kw:["賃料","家賃","レンタルオフィス","wework","コワーキング"]},
-  {cat:"新聞図書費", kw:["amazon kindle","kindle","書店","図書","日経","newspicks"]},
-];
-// 「振込」「ATM」「現金」「給与」等は事業/私用の区別がつかないため必ず要確認に。
-const FORCE_FLAG = ["振込","振替","atm","現金","給与","賞与","税金","保険","年金","返金","キャッシング","不明"];
-const CATEGORIES = ["売上高","通信費","消耗品費","会議費","旅費交通費","荷造運賃","水道光熱費","支払手数料","広告宣伝費","地代家賃","新聞図書費","接待交際費","外注費","仕入高","事業主貸","事業主借","要確認"];
+// ============================================================================
+// Outcome Tool Factory — 共通ランタイム（KEN-407）
+// ツール別の値はすべて下の TOOL 設定（config JSON）から注入される。
+// このファイルはテンプレート。生成は scripts/tool_factory.py 経由。手で編集しない。
+// ============================================================================
+const TOOL = {
+  "slug": "csv-kit",
+  "lang": "ja",
+  "title": "銀行CSV → 勘定科目 仕分けキット｜確定申告レスキュー",
+  "metaDescription": "確定申告前に口座連携が止まっても大丈夫。銀行のCSVを貼るだけで、AIの考え方で勘定科目を自動仕分け。自信のない取引だけ\"要確認\"フラグを立てるので、あなたが見るのは数件だけ。freeeインポート形式で書き出せます。",
+  "ui": {
+    "kicker": "確定申告レスキュー・キット",
+    "h1": "銀行CSV → 勘定科目 仕分けキット",
+    "subtitle": "口座連携が止まっても大丈夫。CSVを貼るだけで自動仕分け、\"自信のない取引\"だけフラグを立てます。",
+    "step1": "銀行の取引CSVを貼り付け",
+    "inputHint": "ネットバンキングからダウンロードした明細CSVを貼り付けてください（日付・摘要・金額の列があればOK）。手元にない人は「サンプルを入れる」で試せます。",
+    "placeholder": "日付,摘要,出金,入金\n2026-02-10,アマゾンウェブサービス,3300,\n2026-02-11,スターバックス渋谷,680,",
+    "itemNoun": "取引",
+    "resultHint": "⚠️ 黄色の「要確認」行＝AIの考え方でも判断しきれない取引。ここだけ科目を選び直してください（それ以外は触らなくてOK）。",
+    "cols": [
+      "日付",
+      "摘要",
+      "金額",
+      "勘定科目",
+      "判定"
+    ],
+    "footerExtra": "",
+    "disclaimer": "※ 入力データはブラウザ内だけで処理され、どこにも送信・保存されません（このページはオフラインでも動きます）。本ツールは一般的な業務効率化のための情報提供であり、税務上の個別助言ではありません。勘定科目の最終判断は税理士等の専門家にご確認ください。"
+  },
+  "logic": {
+    "parseMode": "out_in",
+    "headerRegex": "日付|date|摘要|内容|金額|出金|入金",
+    "rules": [
+      {
+        "cat": "通信費",
+        "kw": [
+          "アマゾンウェブ",
+          "aws",
+          "さくらインターネット",
+          "エックスサーバー",
+          "xserver",
+          "ドコモ",
+          "docomo",
+          "au",
+          "softbank",
+          "ソフトバンク",
+          "楽天モバイル",
+          "ocn",
+          "biglobe",
+          "zoom",
+          "ズーム",
+          "slack",
+          "google workspace",
+          "microsoft 365",
+          "ms365"
+        ]
+      },
+      {
+        "cat": "消耗品費",
+        "kw": [
+          "adobe",
+          "アドビ",
+          "notion",
+          "figma",
+          "canva",
+          "github",
+          "openai",
+          "anthropic",
+          "claude",
+          "chatgpt",
+          "apple.com",
+          "app store",
+          "アップル"
+        ]
+      },
+      {
+        "cat": "会議費",
+        "kw": [
+          "スターバックス",
+          "スタバ",
+          "ドトール",
+          "タリーズ",
+          "コメダ",
+          "ルノアール",
+          "starbucks",
+          "cafe",
+          "カフェ"
+        ]
+      },
+      {
+        "cat": "旅費交通費",
+        "kw": [
+          "jr",
+          "スイカ",
+          "suica",
+          "pasmo",
+          "パスモ",
+          "タクシー",
+          "ana",
+          "jal",
+          "新幹線",
+          "ガソリン",
+          "eneos",
+          "エネオス",
+          "出光",
+          "高速",
+          "etc"
+        ]
+      },
+      {
+        "cat": "荷造運賃",
+        "kw": [
+          "ヤマト",
+          "クロネコ",
+          "佐川",
+          "日本郵便",
+          "ゆうパック",
+          "letterpack",
+          "レターパック"
+        ]
+      },
+      {
+        "cat": "水道光熱費",
+        "kw": [
+          "電力",
+          "でんき",
+          "電気",
+          "東京電力",
+          "関西電力",
+          "ガス",
+          "水道"
+        ]
+      },
+      {
+        "cat": "支払手数料",
+        "kw": [
+          "freee",
+          "マネーフォワード",
+          "stripe",
+          "ストライプ",
+          "paypal",
+          "ペイパル",
+          "振込手数料",
+          "手数料"
+        ]
+      },
+      {
+        "cat": "広告宣伝費",
+        "kw": [
+          "google ads",
+          "google広告",
+          "meta",
+          "facebook広告",
+          "x ads",
+          "yahoo広告",
+          "リスティング"
+        ]
+      },
+      {
+        "cat": "地代家賃",
+        "kw": [
+          "賃料",
+          "家賃",
+          "レンタルオフィス",
+          "wework",
+          "コワーキング"
+        ]
+      },
+      {
+        "cat": "新聞図書費",
+        "kw": [
+          "amazon kindle",
+          "kindle",
+          "書店",
+          "図書",
+          "日経",
+          "newspicks"
+        ]
+      }
+    ],
+    "categories": [
+      "売上高",
+      "通信費",
+      "消耗品費",
+      "会議費",
+      "旅費交通費",
+      "荷造運賃",
+      "水道光熱費",
+      "支払手数料",
+      "広告宣伝費",
+      "地代家賃",
+      "新聞図書費",
+      "接待交際費",
+      "外注費",
+      "仕入高",
+      "事業主貸",
+      "事業主借",
+      "要確認"
+    ],
+    "forceFlag": {
+      "keywords": [
+        "振込",
+        "振替",
+        "atm",
+        "現金",
+        "給与",
+        "賞与",
+        "税金",
+        "保険",
+        "年金",
+        "返金",
+        "キャッシング",
+        "不明"
+      ],
+      "category": "要確認",
+      "reasonTpl": "「{kw}」は事業/私用の区別が必要"
+    },
+    "negativeIncome": {
+      "category": "売上高",
+      "reason": "入金は売上/事業主借/返金の判別が必要"
+    },
+    "unknownCategory": "要確認",
+    "unknownReason": "既知パターンに一致せず",
+    "yenSignedNegative": true,
+    "exportLabelPrefix": "",
+    "exportTypeBySign": true,
+    "exportFilename": "shiwake_import.csv",
+    "promptIntro": "あなたは日本の個人事業主の確定申告を手伝う経理アシスタントです。\n以下の銀行取引について、最も適切な勘定科目を1つずつ付けてください。判断に迷う場合は候補を2つ挙げ、確認すべき点を1行で添えてください。",
+    "promptFormat": "出力形式: 「日付 / 摘要 / 勘定科目 / （迷う場合の確認点）」",
+    "sample": "日付,摘要,出金,入金\n2026-02-03,アマゾンウェブサービス JP,3300,\n2026-02-05,スターバックス渋谷スカイ,680,\n2026-02-07,ADOBE SYSTEMS,2728,\n2026-02-09,ヤマト運輸 宅急便,1140,\n2026-02-10,振込 ○○ショウテン,55000,\n2026-02-12,JR東日本 モバイルSuica,3000,\n2026-02-14,東京電力エナジーパートナー,8420,\n2026-02-16,OPENAI CHATGPT SUBSCR,3000,\n2026-02-18,ETC 首都高速,1320,\n2026-02-20,振込入金 △△クライアント,,220000\n2026-02-22,コメダ珈琲店,950,\n2026-02-25,ATM出金,30000,\n2026-02-27,楽天モバイル,2178,\n2026-02-28,GitHub Inc,1500,",
+    "parseErrorMsg": "CSVが読み取れませんでした。日付,摘要,金額 の形式で貼り付けてください。"
+  },
+  "optin": null
+};
+const T = TOOL.logic;
+const UI = TOOL.ui;
 
-const SAMPLE = `日付,摘要,出金,入金
-2026-02-03,アマゾンウェブサービス JP,3300,
-2026-02-05,スターバックス渋谷スカイ,680,
-2026-02-07,ADOBE SYSTEMS,2728,
-2026-02-09,ヤマト運輸 宅急便,1140,
-2026-02-10,振込 ○○ショウテン,55000,
-2026-02-12,JR東日本 モバイルSuica,3000,
-2026-02-14,東京電力エナジーパートナー,8420,
-2026-02-16,OPENAI CHATGPT SUBSCR,3000,
-2026-02-18,ETC 首都高速,1320,
-2026-02-20,振込入金 △△クライアント,,220000
-2026-02-22,コメダ珈琲店,950,
-2026-02-25,ATM出金,30000,
-2026-02-27,楽天モバイル,2178,
-2026-02-28,GitHub Inc,1500,`;
+// ── Outcome イベント（匿名集計・PIIなし） ───────────────────────────────────
+// ユーザーの入力データは送信しない（従来どおりブラウザ内処理）。
+// 送るのは「どの課題ツールが、どれだけ自動化の成果を出したか」という匿名の集計シグナルのみ。
+// = Decision+Outcome モートの「測ったDelta」をツール層で拾う蛇口（設計=outcome_tool_factory_design.md）。
+function gcEvent(name){
+  try{
+    if(window.goatcounter && typeof window.goatcounter.count === "function"){
+      window.goatcounter.count({path:name, title:name, event:true});
+    }
+  }catch(e){/* analytics 失敗はツール本体に影響させない */}
+}
+function autoBucket(total, autoN){
+  if(total<=0) return "0";
+  const r = Math.round((autoN/total)*100);
+  if(r>=100) return "100";
+  if(r>=80) return "80-99";
+  if(r>=50) return "50-79";
+  return "0-49";
+}
 
 let rows = [];
+
+function num(s){ if(!s) return 0; return parseInt(String(s).replace(/[^\d-]/g,""),10)||0; }
+function yen(n){ const s=Math.abs(n).toLocaleString("ja-JP"); return (T.yenSignedNegative && n<0 ? "+" : "")+"¥"+s; }
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function parseCSV(text){
   const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
   if(!lines.length) return [];
-  // 1行目がヘッダか判定（数字が少なければヘッダ扱い）
-  const first = lines[0];
-  const hasHeader = /日付|date|摘要|内容|金額|出金|入金/i.test(first);
+  const hasHeader = new RegExp(T.headerRegex, "i").test(lines[0]);
   const dataLines = hasHeader ? lines.slice(1) : lines;
   return dataLines.map(line=>{
     const c = line.split(",").map(s=>s.trim());
-    // 列推定: [日付, 摘要, 出金, 入金] か [日付, 摘要, 金額]
     const date = c[0]||"";
-    const desc = c[1]||"";
+    const label = c[1]||"";
     let amount = 0;
-    if(c.length>=4){ amount = num(c[2]) || -num(c[3]); }   // 出金プラス/入金マイナス表示
-    else { amount = num(c[2]); }
-    return {date, desc, amount};
-  }).filter(r=>r.desc);
+    if(T.parseMode === "out_in"){
+      if(c.length>=4){ amount = num(c[2]) || -num(c[3]); } else { amount = num(c[2]); }
+    } else { // amount_fallback
+      amount = num(c[2]);
+      if(!amount){ for(let i=c.length-1;i>=2;i--){ if(num(c[i])){ amount=num(c[i]); break; } } }
+    }
+    return {date, label, amount};
+  }).filter(r=>r.label);
 }
-function num(s){ if(!s) return 0; return parseInt(String(s).replace(/[^\d-]/g,""),10)||0; }
-function yen(n){ const s=Math.abs(n).toLocaleString("ja-JP"); return (n<0?"+":"")+"¥"+s; }
 
-function categorize(desc, amount){
-  const d = desc.toLowerCase();
-  if(amount<0) return {cat:"売上高", flag:true, reason:"入金は売上/事業主借/返金の判別が必要"};
-  for(const f of FORCE_FLAG){ if(d.includes(f.toLowerCase())) return {cat:"要確認", flag:true, reason:`「${f}」は事業/私用の区別が必要`}; }
-  for(const r of RULES){ for(const k of r.kw){ if(d.includes(k.toLowerCase())) return {cat:r.cat, flag:false, reason:`「${k}」に一致`}; } }
-  return {cat:"要確認", flag:true, reason:"既知パターンに一致せず"};
+function categorize(label, amount){
+  const d = label.toLowerCase();
+  if(T.negativeIncome && amount<0) return {cat:T.negativeIncome.category, flag:true, reason:T.negativeIncome.reason};
+  if(T.assetThreshold && amount>=T.assetThreshold.amount) return {cat:T.assetThreshold.category, flag:true, reason:T.assetThreshold.reason};
+  if(T.forceFlag){ for(const f of T.forceFlag.keywords){ if(d.includes(f.toLowerCase())) return {cat:T.forceFlag.category, flag:true, reason:T.forceFlag.reasonTpl.replace("{kw}",f)}; } }
+  if(T.privateHints){ for(const p of T.privateHints.keywords){ if(d.includes(p.toLowerCase().trim())) return {cat:T.privateHints.category, flag:true, reason:T.privateHints.reason}; } }
+  for(const r of T.rules){ for(const k of r.kw){ if(d.includes(k.toLowerCase())) return {cat:r.cat, flag:false, reason:`「${k}」に一致`}; } }
+  return {cat:T.unknownCategory, flag:true, reason:T.unknownReason};
 }
 
 function run(){
   const parsed = parseCSV(document.getElementById("input").value);
-  if(!parsed.length){ alert("CSVが読み取れませんでした。日付,摘要,金額 の形式で貼り付けてください。"); return; }
-  rows = parsed.map(r=>{ const g=categorize(r.desc,r.amount); return {...r, cat:g.cat, flag:g.flag, reason:g.reason}; });
+  if(!parsed.length){ alert(T.parseErrorMsg); return; }
+  rows = parsed.map(r=>{ const g=categorize(r.label,r.amount); return {...r, cat:g.cat, flag:g.flag, reason:g.reason}; });
   render();
   document.getElementById("result").classList.remove("hidden");
   document.getElementById("result").scrollIntoView({behavior:"smooth"});
+  // Outcome: ツールが課題を解いた状態変化（自動化率）を匿名で記録
+  const total=rows.length, flag=rows.filter(r=>r.flag).length, autoN=total-flag;
+  gcEvent(`outcome-${TOOL.slug}-run`);
+  gcEvent(`outcome-${TOOL.slug}-auto-${autoBucket(total, autoN)}`);
 }
 
 function render(){
@@ -184,8 +428,8 @@ function render(){
   rows.forEach((r,i)=>{
     const tr = document.createElement("tr");
     if(r.flag) tr.className="flag";
-    const opts = CATEGORIES.map(c=>`<option ${c===r.cat?"selected":""}>${c}</option>`).join("");
-    tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.desc)}</td>
+    const opts = T.categories.map(c=>`<option ${c===r.cat?"selected":""}>${c}</option>`).join("");
+    tr.innerHTML = `<td>${r.date}</td><td>${escapeHtml(r.label)}</td>
       <td class="amount">${yen(r.amount)}</td>
       <td><select data-i="${i}">${opts}</select></td>
       <td><span class="badge ${r.flag?"need":"auto"}">${r.flag?"要確認":"自動"}</span></td>`;
@@ -203,6 +447,7 @@ function render(){
   });
   updateCounts();
 }
+
 function updateCounts(){
   const total=rows.length, flag=rows.filter(r=>r.flag).length;
   document.getElementById("cTotal").textContent=total;
@@ -210,43 +455,85 @@ function updateCounts(){
   document.getElementById("cFlag").textContent=flag;
   document.getElementById("flagInline").textContent=flag;
 }
-function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function exportCSV(){
-  // freeeの「取引（収支）インポート」を意識した簡易形式
   const header = ["収支区分","発生日","勘定科目","金額","摘要"];
   const lines = rows.map(r=>{
-    const type = r.amount<0 ? "収入":"支出";
-    return [type, r.date, r.cat, Math.abs(r.amount), `"${r.desc.replace(/"/g,'""')}"`].join(",");
+    const type = (T.exportTypeBySign && r.amount<0) ? "収入":"支出";
+    const note = `"${(T.exportLabelPrefix||"")}${r.label.replace(/"/g,'""')}"`;
+    return [type, r.date, r.cat, Math.abs(r.amount), note].join(",");
   });
   const csv = "﻿"+[header.join(","),...lines].join("\r\n");
   const blob = new Blob([csv],{type:"text/csv"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "shiwake_import.csv";
+  a.download = T.exportFilename;
   a.click();
   toast("CSVを書き出しました");
+  gcEvent(`outcome-${TOOL.slug}-export`); // Outcome: 価値を受け取り完了（主要コンバージョン）
 }
+
 function copyPrompt(){
   const need = rows.filter(r=>r.flag);
-  if(!need.length){ toast("要確認の取引はありません"); return; }
-  const list = need.map(r=>`- ${r.date} / ${r.desc} / ${yen(r.amount)}`).join("\n");
-  const prompt = `あなたは日本の個人事業主の確定申告を手伝う経理アシスタントです。
-以下の銀行取引について、最も適切な勘定科目を1つずつ付けてください。判断に迷う場合は候補を2つ挙げ、確認すべき点を1行で添えてください。
-
-取引:
-${list}
-
-出力形式: 「日付 / 摘要 / 勘定科目 / （迷う場合の確認点）」`;
+  if(!need.length){ toast(`要確認の${UI.itemNoun}はありません`); return; }
+  const list = need.map(r=>`- ${r.date} / ${r.label} / ${yen(r.amount)}`).join("\n");
+  const prompt = `${T.promptIntro}\n\n${UI.itemNoun}:\n${list}\n\n${T.promptFormat}`;
   navigator.clipboard.writeText(prompt).then(()=>toast("プロンプトをコピーしました"));
+  gcEvent(`outcome-${TOOL.slug}-copyprompt`);
 }
+
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
 
-document.getElementById("run").addEventListener("click",run);
-document.getElementById("sample").addEventListener("click",()=>{document.getElementById("input").value=SAMPLE;});
-document.getElementById("clear").addEventListener("click",()=>{document.getElementById("input").value="";document.getElementById("result").classList.add("hidden");});
-document.getElementById("export").addEventListener("click",exportCSV);
-document.getElementById("copyPrompt").addEventListener("click",copyPrompt);
+// ── 受け皿(オプトイン)スロット — config.optin がある場合のみ描画 ───────────────
+// 既定(null)では何も描画しない＝KPI③受け皿は「前さばき(設計のみ)」。
+// 6/19後にバックエンドGoが出たら config.optin を設定して有効化する。
+function renderOptin(){
+  const o = TOOL.optin;
+  if(!o) return;
+  const slot = document.getElementById("optin-slot");
+  slot.innerHTML = `
+    <div class="optin">
+      <h3>${escapeHtml(o.heading||"")}</h3>
+      <p>${escapeHtml(o.body||"")}</p>
+      <form id="optin-form" ${o.action?`action="${o.action}" method="post"`:""}>
+        <div class="row">
+          <input type="email" name="email" placeholder="${escapeHtml(o.placeholder||"メールアドレス")}" required>
+          <button type="submit">${escapeHtml(o.cta||"受け取る")}</button>
+        </div>
+        <label class="consent"><input type="checkbox" name="consent" required>
+          <span>${escapeHtml(o.consent||"上記の目的での連絡に同意します。")}</span></label>
+      </form>
+    </div>`;
+}
+
+function boot(){
+  // 文言の注入（config JSON が単一の正）
+  document.documentElement.lang = TOOL.lang || "ja";
+  document.getElementById("ui-kicker").textContent = UI.kicker;
+  document.getElementById("ui-h1").textContent = UI.h1;
+  document.getElementById("ui-subtitle").textContent = UI.subtitle;
+  document.getElementById("ui-step1").textContent = UI.step1;
+  document.getElementById("ui-inputHint").textContent = UI.inputHint;
+  document.getElementById("input").setAttribute("placeholder", UI.placeholder);
+  document.getElementById("ui-itemNoun").textContent = UI.itemNoun;
+  document.getElementById("ui-resultHint").textContent = UI.resultHint;
+  document.getElementById("ui-colDate").textContent = UI.cols[0];
+  document.getElementById("ui-colLabel").textContent = UI.cols[1];
+  document.getElementById("ui-colAmount").textContent = UI.cols[2];
+  document.getElementById("ui-colCat").textContent = UI.cols[3];
+  document.getElementById("ui-colJudge").textContent = UI.cols[4];
+  // footerExtra は <a> を含むため innerHTML（生成時に信頼できる config のみ）
+  document.getElementById("ui-footerExtra").innerHTML = UI.footerExtra || "";
+  document.getElementById("ui-disclaimer").textContent = UI.disclaimer;
+  renderOptin();
+
+  document.getElementById("run").addEventListener("click",run);
+  document.getElementById("sample").addEventListener("click",()=>{document.getElementById("input").value=T.sample;});
+  document.getElementById("clear").addEventListener("click",()=>{document.getElementById("input").value="";document.getElementById("result").classList.add("hidden");});
+  document.getElementById("export").addEventListener("click",exportCSV);
+  document.getElementById("copyPrompt").addEventListener("click",copyPrompt);
+}
+document.addEventListener("DOMContentLoaded", boot);
 </script>
 </body>
 </html>
