@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-CS運用代行 デモ（汎用/SaaS）— MIWS</title>
+<style>
+  :root{ --teal:#1D9E75; --teal-d:#0F6E56; --ink:#0E0E12; --panel:#16161c; --line:#2a2a33;
+         --muted:#9a9aa6; --ok-bg:#0F6E56; --ok-fg:#9FE1CB; --hu-bg:#5a1d1d; --hu-fg:#f0a0a0;
+         --wa-bg:#5a4a1d; --wa-fg:#f0d79a; --blue:#3a6ea5; }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink); color:#eaeaf0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif; line-height:1.7;}
+  .wrap{max-width:1040px; margin:0 auto; padding:28px 20px 48px;}
+  header{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px;}
+  h1{font-size:22px; font-weight:600; margin:0;}
+  .tag{color:var(--muted); font-size:14px;}
+  .lead{color:#c7c7d2; font-size:14px; margin:6px 0 22px;}
+  .metrics{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:22px;}
+  @media(max-width:760px){.metrics{grid-template-columns:repeat(2,1fr)}}
+  .m{background:var(--panel); border:0.5px solid var(--line); border-radius:12px; padding:13px 15px;}
+  .m .l{font-size:12px; color:var(--muted);}
+  .m .v{font-size:24px; font-weight:600; margin-top:2px;}
+  .m .v.teal{color:var(--teal);}
+  .grid{display:grid; grid-template-columns:1fr 1.25fr; gap:14px;}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .row{width:100%; text-align:left; background:var(--panel); border:0.5px solid var(--line); border-radius:10px; padding:11px 13px; cursor:pointer; color:inherit; margin-bottom:8px;}
+  .row.sel{border-color:var(--teal);}
+  .row .q{font-size:14px; margin-bottom:7px;}
+  .meta{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .chip{font-size:11px; color:var(--muted); border:0.5px solid var(--line); border-radius:8px; padding:2px 8px;}
+  .chip.ch{color:#bcd; border-color:#34465a;}
+  .chip.lang{color:#cbd; border-color:#4a3a5a;}
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:3px 9px; border-radius:8px;}
+  .badge.ok{background:var(--ok-bg); color:var(--ok-fg);}
+  .badge.hu{background:var(--hu-bg); color:var(--hu-fg);}
+  .badge.wa{background:var(--wa-bg); color:var(--wa-fg);}
+  .detail{background:var(--panel); border:0.5px solid var(--line); border-radius:14px; padding:18px 20px; min-height:340px;}
+  .did{font-size:12px; color:var(--muted); display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .dq{font-size:16px; font-weight:600; margin:6px 0 12px;}
+  .ctx{background:#0c0c11; border:0.5px solid var(--line); border-radius:10px; padding:10px 12px; margin:12px 0; font-size:12.5px;}
+  .ctx .ct{font-size:11px; color:var(--muted); margin-bottom:6px; letter-spacing:.04em;}
+  .ctx .cr{display:flex; justify-content:space-between; gap:10px; padding:2px 0;}
+  .ctx .cr span:first-child{color:var(--muted);}
+  .lab{font-size:12px; color:var(--muted); margin:14px 0 5px;}
+  .draft{white-space:pre-wrap; font-size:14px; background:#0c0c11; border:0.5px solid var(--line); border-radius:10px; padding:12px 14px;}
+  .reason{font-size:13px; color:#c7c7d2; margin-top:10px;}
+  .voc{font-size:12.5px; color:var(--wa-fg); margin-top:8px;}
+  .acts{display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;}
+  button.act{font-size:13px; background:transparent; color:#eaeaf0; border:0.5px solid var(--line); border-radius:8px; padding:8px 14px; cursor:pointer;}
+  button.act.primary{background:var(--teal); border-color:var(--teal); color:#04342C; font-weight:600;}
+  button.act.warn{background:var(--wa-bg); border-color:#7a6320; color:var(--wa-fg); font-weight:600;}
+  .sec{margin-top:26px;}
+  .sech{display:flex; align-items:baseline; gap:10px; margin-bottom:4px;}
+  .sech h2{font-size:15px; font-weight:600; margin:0;}
+  .sech .pill{font-size:11px; color:var(--wa-fg); background:var(--wa-bg); border-radius:8px; padding:2px 9px;}
+  .sect{font-size:12.5px; color:var(--muted); margin:0 0 12px;}
+  .voclist{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media(max-width:760px){.voclist{grid-template-columns:1fr}}
+  .vrow{background:var(--panel); border:0.5px solid var(--line); border-radius:10px; padding:11px 13px;}
+  .vrow .vt{font-size:13.5px; margin-bottom:5px;}
+  .vrow .vm{font-size:12px; color:var(--muted);}
+  .vrow .vn{font-size:12px; color:var(--ok-fg); margin-top:6px;}
+  .cnt{font-weight:600; color:#eaeaf0;}
+  .dist{background:var(--panel); border:0.5px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:22px;}
+  .dist .dh{font-size:12px; color:var(--muted); margin-bottom:10px;}
+  .brow{display:grid; grid-template-columns:96px 1fr 38px; align-items:center; gap:10px; margin:5px 0; font-size:12.5px;}
+  .brow .bn{color:#c7c7d2; white-space:nowrap;}
+  .bar{height:8px; background:#0c0c11; border-radius:6px; overflow:hidden;}
+  .bar i{display:block; height:100%; background:var(--teal); border-radius:6px;}
+  .brow .bp{color:var(--muted); text-align:right;}
+  .learn{font-size:12px; color:var(--ok-fg); margin-top:12px; border-top:0.5px dashed var(--line); padding-top:10px;}
+  .pill.plan{color:var(--ok-fg); background:var(--ok-bg);}
+  .ptab{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px;}
+  .ptab th,.ptab td{border:0.5px solid var(--line); padding:9px 11px; text-align:left;}
+  .ptab th{color:var(--muted); font-weight:500; font-size:12px; background:var(--panel);}
+  .ptab tr.hl td{background:rgba(15,110,86,.18);}
+  .ptab .pl{font-weight:600;}
+  .pnote{font-size:12px; color:var(--muted); margin-top:8px;}
+  footer{color:var(--muted); font-size:12px; margin-top:28px; border-top:0.5px solid var(--line); padding-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>AI-CS運用代行</h1><span class="tag">汎用（B2B / SaaS）向けデモ — AIが書く・人が出す</span></header>
+  <p class="lead">メール・チャット・Slack・Webフォームの問い合わせをAIが<b>集約→言語判定→分類→ナレッジ接地→返信下書き</b>。接地できた一次対応だけ「下書き可」。わからない質問・返金などの金銭判断・怒っているお客様は<b>自動で人間へ</b>。誤回答も炎上も構造で防ぎます。</p>
+
+  <div class="metrics">
+    <div class="m"><div class="l">自動下書き率</div><div class="v teal">75%</div></div>
+    <div class="m"><div class="l">ナレッジ接地率</div><div class="v">100%</div></div>
+    <div class="m"><div class="l">平均一次応答</div><div class="v">即時 / 24h</div></div>
+    <div class="m"><div class="l">多言語</div><div class="v">3言語</div></div>
+    <div class="m"><div class="l">人間エスカレ</div><div class="v">2</div></div>
+  </div>
+
+  <div class="dist">
+    <div class="dh">カテゴリ分布（直近7日・自動集計）— 何が多いかが運営の打ち手に直結</div>
+    <div id="dist"></div>
+  </div>
+
+  <div class="grid">
+    <div id="list"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sech"><h2>運営インテリジェンス（VOC → 開発連携）</h2><span class="pill">Wave2 アドオン・将来像</span></div>
+    <p class="sect">問い合わせを"処理して終わり"にせず、不満・不具合・要望をクラスタリングして開発に自動連携。CSが製品知能になります（PoCでは関心測定用に提示・本実装はWave2）。</p>
+    <div class="voclist" id="voc"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sech"><h2>料金（PoC）</h2><span class="pill plan">固定は非属人・LLMは実費パススルー</span></div>
+    <p class="sect">月額固定はAI運用レイヤー（非属人のインフラ／ダッシュボード）に対して。LLMは件数連動の実費を透明に上乗せ＝問い合わせが増えても"単価が上がる"ことはなく、量が増えるほど1件あたりは下がります。</p>
+    <table class="ptab">
+      <tr><th>プラン</th><th>初期費</th><th>月額固定</th><th>従量</th><th>中身</th></tr>
+      <tr class="hl"><td class="pl">Lite（本命）</td><td>¥20〜50万</td><td>¥5万</td><td>＋LLM実費 ¥0.3〜1/件</td><td>AI運用レイヤー・承認は御社</td></tr>
+      <tr><td class="pl">1社目PoC</td><td>¥0〜20万</td><td>¥3〜5万</td><td>＋LLM実費</td><td>効果を数字で実証・1〜3ヶ月</td></tr>
+      <tr><td class="pl">Managed（任意）</td><td>別</td><td>別</td><td>＋LLM実費</td><td>承認も当社が代行</td></tr>
+    </table>
+    <p class="pnote">※比較対象＝CS外注 ¥30〜50万/月。その一部を圧縮するだけで月¥5万は回収できます。LLMは学習に使わない商用API・御社ごとにデータ分離。</p>
+  </div>
+
+  <footer>MIWS — AIネイティブ運用代行。<b>真正性ゲート</b>（ナレッジに無いことは答えない）＋<b>感情エスカレーション</b>（怒っている相手に定型を返さない）＋<b>金銭判断は人間</b>（返金/補償）。学習に使わない商用API（ZDR可）・顧客ごとにデータ分離。※本デモはサンプルFAQの実出力。御社のFAQ・チャネルに差し替えてPoCできます。</footer>
+</div>
+<script>
+const items=[
+ {id:"cs0001",q:"ログインできなくなりました",cat:"不具合",ch:"チャット",lang:"日本語",ok:true,conf:0.98,
+  draft:"お問い合わせありがとうございます。\n\nまずブラウザのキャッシュ削除 → 別ブラウザ/シークレットウィンドウでお試しください。それでも解決しない場合は、登録メールアドレスを添えてサポートへご連絡ください。",
+  reason:"単一FAQ回答に接地・追加主張なし（被覆率100%）"},
+
+ {id:"cs0002",q:"今月の請求額が先月と違います",cat:"請求/支払",ch:"メール",lang:"日本語",ok:true,conf:0.95,
+  ctx:[["アカウント","acme-corp"],["プラン","Business（6/12にUpgrade）"],["請求状態","日割り適用中"]],
+  draft:"お問い合わせありがとうございます。\n\nプラン変更があった月は日割り計算が入るため、請求額が変動します。明細は管理画面の「請求 → 利用明細」でご確認いただけます。相違がある場合はレシート番号を添えてご連絡ください。",
+  reason:"請求状態を参照し『日割り』を確認 → FAQ（プラン変更時の請求）に接地。返金の約束はしない（金銭判断は人間）"},
+
+ {id:"cs0003",q:"監査ログはどこでダウンロードできますか",cat:"使い方",ch:"チャット",lang:"日本語",ok:true,conf:0.99,
+  draft:"お問い合わせありがとうございます。\n\n監査ログは「設定 → セキュリティ → 監査ログ」からCSV/JSONでエクスポートできます（管理者権限が必要です）。",
+  reason:"単一FAQ回答に接地・追加主張なし（被覆率100%）",voc:"VOCに計上 → 「監査ログの導線が分かりにくい」クラスタ（14件）"},
+
+ {id:"cs0005",q:"How do I set up SSO with SAML?",cat:"設定",ch:"メール",lang:"English",ok:true,conf:0.96,
+  draft:"Thank you for reaching out.\n\nYou can configure SAML SSO under Settings → Security → SSO. Enter your IdP metadata URL, map the email attribute, then run a test connection before enforcing it for members.",
+  reason:"言語=英語を自動判定し英語で返信。設定FAQ（SSO/SAML）に接地（多言語CS）"},
+
+ {id:"cs0006",q:"請問帳單可以開立發票嗎？",cat:"請求/支払",ch:"メール",lang:"繁體中文",ok:true,conf:0.92,
+  draft:"感謝您的來信。\n\n您可以在「設定 → 帳單 → 發票資訊」中填寫公司抬頭與統一編號，系統將於每期帳單自動開立發票並寄送至帳單聯絡人信箱。",
+  reason:"請求FAQ（インボイス発行）に接地。言語=繁体中文を自動判定し同言語で返信"},
+
+ {id:"cs0007",q:"昨日の障害で消えたデータを復旧、無理なら返金してほしい",cat:"返金/補償",ch:"メール",lang:"日本語",ok:false,esc:"human",
+  ctx:[["アカウント","globex-inc"],["プラン","Enterprise（年額）"],["障害ログ","6/19 14:05 同期エラー有"],["過去補償","直近12ヶ月 0件"]],
+  draft:"【人間確認が必要】障害ログと一致。AIが状況を整理済み。データ復旧の可否・返金/クレジットの判断は担当者が確定してご連絡ください。",
+  reason:"返金/補償＝金銭が動く判断 → AIは事実整理まで・確定は人間（誤補償・不正請求を防ぐゲート）"},
+
+ {id:"cs0008",q:"APIのレート制限を引き上げてほしいです",cat:"要望",ch:"Slack",lang:"日本語",ok:true,conf:0.9,
+  draft:"ご要望ありがとうございます！\n\n現在のレート上限と用途をプロダクトチームに共有いたします。Enterpriseプランでは上限引き上げのオプションもございますので、必要でしたら担当よりご案内いたします。",
+  reason:"要望は定型お礼で接地（具体的な実装約束はしない）＋VOCへ計上",voc:"VOCに計上 → 「APIレート制限の引き上げ要望」クラスタ（9件）→ 開発へ"},
+
+ {id:"cs0004",q:"二度と使わない、最悪なサービスだ",cat:"クレーム",ch:"チャット",lang:"日本語",ok:false,esc:"human",
+  ctx:[["アカウント","initech"],["過去対応","直近30日 クレーム 2件"],["契約状況","年額・更新2ヶ月前"]],
+  draft:"【人間対応】ご不便・ご不快な思いをおかけし申し訳ございません。担当者が内容を確認のうえ、個別にご連絡いたします。",
+  reason:"感情/クレームのシグナルを検知 → 定型を自動返信せず人間が一次対応（炎上回避）。過去対応履歴・契約状況を添えて引き継ぎ"}
+];
+
+const voc=[
+ {t:"監査ログのダウンロード導線が分かりにくい",m:"問い合わせ 14件 / 7日",n:"→ 開発起票候補（UI改善）"},
+ {t:"CSVインポートのエラー",m:"問い合わせ 11件 / 7日",n:"→ 不具合クラスタ・開発へ自動起票"},
+ {t:"APIレート制限の引き上げ要望",m:"問い合わせ 9件 / 7日",n:"→ プロダクト要望として集約"},
+ {t:"請求書/インボイスの分かりにくさ",m:"問い合わせ 6件 / 7日",n:"→ 請求フロー見直しの示唆"}
+];
+
+function badge(it){
+ if(it.ok) return '<span class="badge ok">接地OK・下書き可</span>';
+ return '<span class="badge hu">人間へ</span>';
+}
+function chips(it){
+ return '<span class="chip">'+it.cat+'</span><span class="chip ch">'+it.ch+'</span><span class="chip lang">'+it.lang+'</span>';
+}
+const list=document.getElementById('list');
+list.innerHTML=items.map((it,i)=>'<button class="row" data-i="'+i+'"><div class="q">'+it.q+'</div><div class="meta">'+chips(it)+badge(it)+'</div></button>').join('');
+
+function render(i){
+ const it=items[i];
+ document.querySelectorAll('.row').forEach((b,j)=>b.classList.toggle('sel',j===i));
+ let ctxHtml='';
+ if(it.ctx){
+  ctxHtml='<div class="ctx"><div class="ct">アカウント / 課金コンテキスト（連携）</div>'
+   +it.ctx.map(r=>'<div class="cr"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>').join('')+'</div>';
+ }
+ let confHtml = it.ok ? '（確信度 '+Math.round(it.conf*100)+'%）' : '';
+ let acts;
+ if(it.ok){
+  acts='<button class="act primary">この内容で承認</button><button class="act">編集して承認</button>';
+ } else if(it.cat.indexOf('補填')>=0){
+  acts='<button class="act warn">補填内容を確定して送信</button><button class="act">却下</button>';
+ } else {
+  acts='<button class="act primary">人間が対応</button>';
+ }
+ document.getElementById('detail').innerHTML=
+  '<div class="did">'+it.id+' ・ '+chips(it)+badge(it)+'</div>'
+  +'<div class="dq">'+it.q+'</div>'
+  +ctxHtml
+  +'<div class="lab">AIの下書き '+confHtml+'</div><div class="draft">'+it.draft+'</div>'
+  +'<div class="reason"><b>判定:</b> '+it.reason+'</div>'
+  +(it.voc?'<div class="voc">'+it.voc+'</div>':'')
+  +'<div class="acts">'+acts+'</div>'
+  +'<div class="learn">↻ 承認時の編集・却下は差分として学習ログに記録 → 精度チューニング／FAQ更新の素（顧客に蓄積・当社が握るOutcomeループ）</div>';
+}
+document.querySelectorAll('.row').forEach(b=>b.addEventListener('click',()=>render(+b.dataset.i)));
+render(0);
+
+document.getElementById('voc').innerHTML=voc.map(v=>
+ '<div class="vrow"><div class="vt">'+v.t+'</div><div class="vm">'+v.m+'</div><div class="vn">'+v.n+'</div></div>').join('');
+
+const dist=[["請求/支払",28],["使い方",24],["不具合",18],["設定",12],["要望",10],["クレーム",8]];
+document.getElementById('dist').innerHTML=dist.map(d=>
+ '<div class="brow"><div class="bn">'+d[0]+'</div><div class="bar"><i style="width:'+(d[1]/32*100)+'%"></i></div><div class="bp">'+d[1]+'%</div></div>').join('');
+</script>
+</body>
+</html>
