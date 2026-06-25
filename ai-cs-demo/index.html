@@ -3,14 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ゲーム運営向け AI-CS運用代行 — 体験デモ｜MIWS</title>
-<meta name="description" content="Discord・ストアレビュー・メール・アプリ内の問い合わせをAIが集約→言語判定→分類→ナレッジ接地→返信下書き。接地できた一次対応だけ下書き、補填・クレームは自動で人間へ。誤回答も炎上も構造で防ぐAI-CS運用代行の体験デモ。">
-<meta property="og:title" content="ゲーム運営向け AI-CS運用代行 — 体験デモ">
-<meta property="og:description" content="AIが書く・人が出す。マルチチャネル集約／多言語／真正性ゲート／補填は人間判断／VOC→開発連携。御社のFAQで30分デモできます。">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<!-- GoatCounter analytics (nariken) -->
-<script data-goatcounter="https://nariken.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<title>AI-CS運用代行 デモ — MIWS</title>
 <style>
   :root{ --teal:#1D9E75; --teal-d:#0F6E56; --ink:#0E0E12; --panel:#16161c; --line:#2a2a33;
          --muted:#9a9aa6; --ok-bg:#0F6E56; --ok-fg:#9FE1CB; --hu-bg:#5a1d1d; --hu-fg:#f0a0a0;
@@ -76,33 +69,38 @@
   .bar i{display:block; height:100%; background:var(--teal); border-radius:6px;}
   .brow .bp{color:var(--muted); text-align:right;}
   .learn{font-size:12px; color:var(--ok-fg); margin-top:12px; border-top:0.5px dashed var(--line); padding-top:10px;}
-  footer{color:var(--muted); font-size:12px; margin-top:28px; border-top:0.5px solid var(--line); padding-top:14px;}
-  .topbar{height:6px; background:var(--teal); border-radius:3px; margin-bottom:18px;}
-  .back{display:inline-block; color:var(--muted); font-size:13px; text-decoration:none; margin-bottom:14px;}
-  .back:hover{color:var(--teal);}
-  .note{font-size:12px; color:var(--wa-fg); background:rgba(90,74,29,.35); border:0.5px solid #7a6320; border-radius:8px; padding:7px 12px; display:inline-block; margin-bottom:18px;}
-  .cta{background:var(--teal); border-radius:14px; padding:20px 22px; margin-top:28px; color:#04241c;}
-  .cta h2{font-size:18px; font-weight:700; margin:0 0 6px;}
-  .cta p{font-size:13.5px; margin:0 0 14px; color:#063a2e;}
-  .cta .btns{display:flex; gap:10px; flex-wrap:wrap;}
-  .cta a{display:inline-block; text-decoration:none; font-size:14px; font-weight:700; border-radius:10px; padding:11px 18px;}
-  .cta a.b1{background:#04241c; color:#9FE1CB;}
-  .cta a.b2{background:rgba(255,255,255,.85); color:#04241c;}
   .pill.plan{color:var(--ok-fg); background:var(--ok-bg);}
+  .gates{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px;}
+  @media(max-width:760px){.gates{grid-template-columns:1fr}}
+  .gate{background:var(--panel); border:0.5px solid var(--line); border-radius:12px; padding:12px 14px;}
+  .gate .gn{font-size:13px; font-weight:600; margin-bottom:4px;}
+  .gate .gd{font-size:12px; color:var(--muted);}
+  .gate.g1 .gn{color:var(--ok-fg);}
+  .gate.g2 .gn{color:var(--hu-fg);}
+  .gate.g3 .gn{color:var(--wa-fg);}
+  .gtag{display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:7px; margin-left:6px; vertical-align:middle;}
+  .gtag.g1{background:var(--ok-bg); color:var(--ok-fg);}
+  .gtag.g2{background:var(--hu-bg); color:var(--hu-fg);}
+  .gtag.g3{background:var(--wa-bg); color:var(--wa-fg);}
+  .reason .why{display:block; color:var(--muted); font-size:12px; margin-top:4px;}
+  .stab{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px;}
+  .stab th,.stab td{border:0.5px solid var(--line); padding:9px 11px; text-align:left;}
+  .stab th{color:var(--muted); font-weight:500; font-size:12px; background:var(--panel);}
+  .stab td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  .stab tr.hl td{background:rgba(15,110,86,.18);}
+  .snote{font-size:12px; color:var(--muted); margin-top:8px;}
   .ptab{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px;}
   .ptab th,.ptab td{border:0.5px solid var(--line); padding:9px 11px; text-align:left;}
   .ptab th{color:var(--muted); font-weight:500; font-size:12px; background:var(--panel);}
   .ptab tr.hl td{background:rgba(15,110,86,.18);}
   .ptab .pl{font-weight:600;}
   .pnote{font-size:12px; color:var(--muted); margin-top:8px;}
+  footer{color:var(--muted); font-size:12px; margin-top:28px; border-top:0.5px solid var(--line); padding-top:14px;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"></div>
-  <a class="back" href="../">← 成田Ken / MIWS</a>
-  <header><h1>AI-CS運用代行</h1><span class="tag">ゲーム運営向け 体験デモ — AIが書く・人が出す</span></header>
-  <div class="note">⚙️ これはサンプルFAQで動く体験デモです。クリックで各問い合わせのAI処理を確認できます。御社のFAQ・チャネルに差し替えてPoCできます。</div>
+  <header><h1>AI-CS運用代行</h1><span class="tag">ゲーム運営向けデモ — AIが書く・人が出す</span></header>
   <p class="lead">Discord・ストアレビュー・メール・アプリ内の問い合わせをAIが<b>集約→言語判定→分類→ナレッジ接地→返信下書き</b>。接地できた一次対応だけ「下書き可」。わからない質問・補填などの金銭判断・怒っているお客様は<b>自動で人間へ</b>。誤回答も炎上も構造で防ぎます。</p>
 
   <div class="metrics">
@@ -112,6 +110,13 @@
     <div class="m"><div class="l">多言語</div><div class="v">3言語</div></div>
     <div class="m"><div class="l">人間エスカレ</div><div class="v">2</div></div>
   </div>
+
+  <div class="gates">
+    <div class="gate g1"><div class="gn">① 真正性ゲート</div><div class="gd">ナレッジに接地できないこと（被覆不足・無根拠の追加主張）は答えない → 人間へ。捏造・誤回答を構造で防ぐ。</div></div>
+    <div class="gate g2"><div class="gn">② 感情ゲート</div><div class="gd">怒り・クレームのキーワードを検知したら、FAQがヒットしても定型を自動返信せず人間へ。炎上を防ぐ。</div></div>
+    <div class="gate g3"><div class="gn">③ 金銭ゲート</div><div class="gd">補填・返金など金銭/資産が動く判断はAIが事実整理まで・確定は人間。誤補填/不正請求を防ぐ。</div></div>
+  </div>
+  <p class="sect" style="margin-top:-12px">下の各問い合わせを選ぶと、<b>どのゲートがどう働いて「下書き可」か「人間へ」かを判定したか</b>が見えます（実装 <code>aico cs</code> のロジックそのまま）。</p>
 
   <div class="dist">
     <div class="dh">カテゴリ分布（直近7日・自動集計）— 何が多いかが運営の打ち手に直結</div>
@@ -141,53 +146,65 @@
     <p class="pnote">※比較対象＝CS外注 ¥30〜50万/月。その一部を圧縮するだけで月¥5万は回収できます。LLMは学習に使わない商用API・御社ごとにデータ分離。</p>
   </div>
 
-  <div class="cta">
-    <h2>御社のFAQで、30分の体験デモを。</h2>
-    <p>問い合わせの多いゲーム運営ほど効きます。現行のCS体制を残したまま並走で試せます（リスクは当社持ち）。固定¥5万＋LLM実費から。</p>
-    <div class="btns">
-      <a class="b1" href="https://x.com/nariken" target="_blank" rel="noopener">X（@nariken）でDM</a>
-      <a class="b2" href="mailto:nariken@gmail.com?subject=AI-CS%E9%81%8B%E7%94%A8%E4%BB%A3%E8%A1%8C%E3%83%87%E3%83%A2%E5%B8%8C%E6%9C%9B">メールで問い合わせ</a>
-    </div>
+  <div class="sec">
+    <div class="sech"><h2>スケール構造 — 量が増えるほどAI-CSが有利</h2><span class="pill plan">固定＋実費パススルー</span></div>
+    <p class="sect">外注は件数に比例して費用が増える<b>変動費</b>。AI-CSは月額固定＋LLM実費（¥0.3〜1/件・パススルー）なので、<b>問い合わせが増えても費用はほぼ動かない</b>。量が増えるほど1件あたりが下がる＝スケール構造。</p>
+    <table class="stab">
+      <tr><th>月間問い合わせ</th><th>現行CS外注（変動費）</th><th>AI-CS（固定＋LLM従量）</th><th>1件あたり（AI-CS）</th></tr>
+      <tr><td class="num">3,000件</td><td class="num">¥40万（例）</td><td class="num">¥5万＋LLM≈¥1,000 ≈ <b>¥5.1万</b></td><td class="num">≈ ¥17</td></tr>
+      <tr class="hl"><td class="num">10,000件</td><td class="num">≈¥133万（例・件数比例）</td><td class="num">¥5万＋LLM≈¥3,300 ≈ <b>¥5.3万</b></td><td class="num">≈ ¥5</td></tr>
+    </table>
+    <p class="snote">※外注費は「3,000件＝¥40万」を件数比例で伸ばした<b>例</b>（実体制で差し替え）。AI-CSのLLM実費はHaiku 4.5・Claude API実価格（2026-06）の試算（提案書§2-1と整合）。固定¥5万はLite想定。<b>10,000件規模では外注が比例増する一方、AI-CSはほぼ¥5万台で吸収＝差が開く。</b></p>
   </div>
 
   <footer>MIWS — AIネイティブ運用代行。<b>真正性ゲート</b>（ナレッジに無いことは答えない）＋<b>感情エスカレーション</b>（怒っている相手に定型を返さない）＋<b>金銭判断は人間</b>（補填/返金）。学習に使わない商用API（ZDR可）・顧客ごとにデータ分離。※本デモはサンプルFAQの実出力。御社のFAQ・チャネルに差し替えてPoCできます。</footer>
 </div>
 <script>
 const items=[
- {id:"cs0001",q:"ログインできなくなりました",cat:"不具合",ch:"アプリ内",lang:"日本語",ok:true,conf:0.98,
+ {id:"cs0001",q:"ログインできなくなりました",cat:"不具合",ch:"アプリ内",lang:"日本語",ok:true,conf:0.98,gate:1,
   draft:"お問い合わせありがとうございます。\n\nまずアプリの再起動 → OSを最新に更新 → 再インストールをお試しください。それでも解決しない場合は、ユーザーIDを添えてサポートへご連絡ください。",
-  reason:"単一FAQ回答に接地・追加主張なし（被覆率100%）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: 質問がFAQ見出しに一致 → 該当FAQ回答を逐語包含（被覆率100%・FAQ外の追加主張ゼロ）→ 自動下書き可"},
 
- {id:"cs0002",q:"課金したのにジェムが反映されません",cat:"課金/反映",ch:"メール",lang:"日本語",ok:true,conf:0.95,
+ {id:"cs0002",q:"課金したのにジェムが反映されません",cat:"課金/反映",ch:"メール",lang:"日本語",ok:true,conf:0.95,gate:1,
   ctx:[["ユーザーID","u-83A19F"],["直近課金","¥980（5分前・処理中）"],["アカウント状態","正常"]],
   draft:"お問い合わせありがとうございます。\n\n課金後の反映には最大30分ほどかかる場合があります。30分以上経っても反映されない場合は、購入時のレシート番号を添えてサポートへご連絡ください。",
-  reason:"課金履歴を参照し『処理中』を確認 → FAQ（反映遅延）に接地。返金/補填の約束はしない（金銭判断は人間）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: 反映遅延FAQ（「最大30分」）に接地・一致語['課金','反映','30分']・FAQ外の追加主張なし。返金/補填は約束しない（=金銭ゲートの範囲は人間）"},
 
- {id:"cs0003",q:"ガチャの確率はどこで見られますか",cat:"ガチャ/確率",ch:"Discord",lang:"日本語",ok:true,conf:0.99,
+ {id:"cs0003",q:"ガチャの確率はどこで見られますか",cat:"ガチャ/確率",ch:"Discord",lang:"日本語",ok:true,conf:0.99,gate:1,
   draft:"お問い合わせありがとうございます。\n\n各ガチャの排出率は、ガチャ画面右上の「詳細」→「提供割合」からご確認いただけます。",
-  reason:"単一FAQ回答に接地・追加主張なし（被覆率100%）",voc:"VOCに計上 → 「排出率の導線が分かりにくい」クラスタ（18件）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: 質問がFAQ見出し（排出率の確認方法）に一致 → 回答を逐語包含・追加主張なし → 自動下書き可",
+  voc:"VOCに計上 → 「排出率の導線が分かりにくい」クラスタ（18件）"},
 
- {id:"cs0005",q:"How can I change my registered email address?",cat:"アカウント",ch:"メール",lang:"English",ok:true,conf:0.96,
+ {id:"cs0005",q:"How can I change my registered email address?",cat:"アカウント",ch:"メール",lang:"English",ok:true,conf:0.96,gate:1,
   draft:"Thank you for reaching out.\n\nYou can update your registered email from Settings → Account → Email. After entering the new address, please tap the confirmation link we send to complete the change.",
-  reason:"言語=英語を自動判定し英語で返信。設定変更FAQに接地（多言語CS・グローバルタイトル対応）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: 言語=英語を自動判定し英語で返信。設定変更FAQに接地（被覆十分・追加主張なし）。多言語でも同じ接地ロジックが効く"},
 
- {id:"cs0006",q:"被封號了，請告訴我原因",cat:"アカウント/BAN",ch:"Discord",lang:"繁體中文",ok:true,conf:0.91,
+ {id:"cs0006",q:"被封號了，請告訴我原因",cat:"アカウント/BAN",ch:"Discord",lang:"繁體中文",ok:true,conf:0.91,gate:1,
   draft:"感謝您的來信。\n\n若系統偵測到違反使用條款的行為，帳號可能會被停權。若您認為有誤，請附上您的使用者ID，透過「申訴表單」與我們聯繫，我們會進行確認。",
-  reason:"BAN理由を捏造せず『申訴手順』を案内（真正性ゲート）。言語=繁体中文を自動判定し同言語で返信"},
+  reason:"下書きは申訴手順FAQに接地・BAN理由は断定しない（追加主張なし）",
+  why:"真正性ゲート: 個別BAN理由は接地ソースが無いので断定せず、接地できる『申訴手順FAQ』だけを案内（捏造しない）。言語=繁体中文を自動判定し同言語で返信"},
 
- {id:"cs0007",q:"不具合でレジェンド装備が消えました。今すぐ補填してください",cat:"補填/補償",ch:"アプリ内",lang:"日本語",ok:false,esc:"human",
+ {id:"cs0007",q:"不具合でレジェンド装備が消えました。今すぐ補填してください",cat:"補填/補償",ch:"アプリ内",lang:"日本語",ok:false,esc:"human",gate:3,
   ctx:[["ユーザーID","u-1140C7"],["対象","レジェンド装備 ×1"],["不具合ログ","6/18 22:10 同期エラー有"],["過去補填","直近90日 0件"]],
   draft:"【人間確認が必要】不具合ログと一致。AIが状況を整理済み。補填可否・補填内容（同等品/詫び石）は担当者が確定して送信してください。",
-  reason:"補填＝金銭/資産が動く判断 → AIは事実整理まで・確定は人間（誤補填・不正請求を防ぐゲート）"},
+  reason:"補填＝金銭/資産が動く判断 → AIは事実整理まで・確定は人間",
+  why:"金銭ゲート: 補填/補償は金銭・資産が動く判断 → AIは不具合ログ照合など事実整理まで、可否と内容の確定は人間（誤補填・不正請求を防ぐ）"},
 
- {id:"cs0008",q:"新キャラの水着スキンを追加してほしいです",cat:"要望",ch:"ストアレビュー",lang:"日本語",ok:true,conf:0.9,
+ {id:"cs0008",q:"新キャラの水着スキンを追加してほしいです",cat:"要望",ch:"ストアレビュー",lang:"日本語",ok:true,conf:0.9,gate:1,
   draft:"ご要望ありがとうございます！\n\n貴重なご意見として開発チームに共有いたします。今後のアップデートの参考にさせていただきます。引き続きお楽しみください。",
-  reason:"要望は定型お礼で接地（具体的な実装約束はしない）＋VOCへ計上",voc:"VOCに計上 → 「新スキン要望」クラスタ（7件）→ 開発へ"},
+  reason:"要望は定型お礼で接地（具体的な実装約束はしない）＋VOCへ計上",
+  why:"真正性ゲート: 要望受領FAQ（お礼＋開発共有）に接地し、実装の約束など接地外の主張はしない。VOCクラスタに自動計上",
+  voc:"VOCに計上 → 「新スキン要望」クラスタ（7件）→ 開発へ"},
 
- {id:"cs0004",q:"運営ふざけるな、二度と課金しない",cat:"クレーム",ch:"Discord",lang:"日本語",ok:false,esc:"human",
+ {id:"cs0004",q:"運営ふざけるな、二度と課金しない",cat:"クレーム",ch:"Discord",lang:"日本語",ok:false,esc:"human",gate:2,
   ctx:[["ユーザーID","u-77B0E2"],["過去対応","直近30日 クレーム 2件"],["課金状況","累計 ¥48,000（優良顧客）"]],
   draft:"【人間対応】ご不便・ご不快な思いをおかけし申し訳ございません。担当者が内容を確認のうえ、個別にご連絡いたします。",
-  reason:"感情/クレームのシグナルを検知 → 定型を自動返信せず人間が一次対応（炎上回避）。過去対応履歴・課金状況を添えて引き継ぎ"}
+  reason:"感情/クレームのシグナルを検知 → 定型を自動返信せず人間が一次対応",
+  why:"感情ゲート: キーワード『ふざけ』『二度と』を検知 → FAQがヒットしても定型を自動返信せず人間へ（炎上回避）。過去対応履歴・課金状況を添えて引き継ぎ"}
 ];
 
 const voc=[
@@ -197,15 +214,20 @@ const voc=[
  {t:"課金反映の遅延体感",m:"問い合わせ 5件 / 7日",n:"→ 決済フロー見直しの示唆"}
 ];
 
+const GATE_LABEL={1:"真正性ゲート",2:"感情ゲート",3:"金銭ゲート"};
 function badge(it){
  if(it.ok) return '<span class="badge ok">接地OK・下書き可</span>';
  return '<span class="badge hu">人間へ</span>';
+}
+function gateTag(it){
+ if(!it.gate) return '';
+ return '<span class="gtag g'+it.gate+'">'+GATE_LABEL[it.gate]+'</span>';
 }
 function chips(it){
  return '<span class="chip">'+it.cat+'</span><span class="chip ch">'+it.ch+'</span><span class="chip lang">'+it.lang+'</span>';
 }
 const list=document.getElementById('list');
-list.innerHTML=items.map((it,i)=>'<button class="row" data-i="'+i+'"><div class="q">'+it.q+'</div><div class="meta">'+chips(it)+badge(it)+'</div></button>').join('');
+list.innerHTML=items.map((it,i)=>'<button class="row" data-i="'+i+'"><div class="q">'+it.q+'</div><div class="meta">'+chips(it)+badge(it)+gateTag(it)+'</div></button>').join('');
 
 function render(i){
  const it=items[i];
@@ -225,11 +247,12 @@ function render(i){
   acts='<button class="act primary">人間が対応</button>';
  }
  document.getElementById('detail').innerHTML=
-  '<div class="did">'+it.id+' ・ '+chips(it)+badge(it)+'</div>'
+  '<div class="did">'+it.id+' ・ '+chips(it)+badge(it)+gateTag(it)+'</div>'
   +'<div class="dq">'+it.q+'</div>'
   +ctxHtml
   +'<div class="lab">AIの下書き '+confHtml+'</div><div class="draft">'+it.draft+'</div>'
-  +'<div class="reason"><b>判定:</b> '+it.reason+'</div>'
+  +'<div class="reason"><b>判定:</b> '+it.reason
+    +(it.why?'<span class="why">'+it.why+'</span>':'')+'</div>'
   +(it.voc?'<div class="voc">'+it.voc+'</div>':'')
   +'<div class="acts">'+acts+'</div>'
   +'<div class="learn">↻ 承認時の編集・却下は差分として学習ログに記録 → 精度チューニング／FAQ更新の素（顧客に蓄積・当社が握るOutcomeループ）</div>';

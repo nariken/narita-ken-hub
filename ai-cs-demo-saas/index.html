@@ -70,6 +70,25 @@
   .brow .bp{color:var(--muted); text-align:right;}
   .learn{font-size:12px; color:var(--ok-fg); margin-top:12px; border-top:0.5px dashed var(--line); padding-top:10px;}
   .pill.plan{color:var(--ok-fg); background:var(--ok-bg);}
+  .gates{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px;}
+  @media(max-width:760px){.gates{grid-template-columns:1fr}}
+  .gate{background:var(--panel); border:0.5px solid var(--line); border-radius:12px; padding:12px 14px;}
+  .gate .gn{font-size:13px; font-weight:600; margin-bottom:4px;}
+  .gate .gd{font-size:12px; color:var(--muted);}
+  .gate.g1 .gn{color:var(--ok-fg);}
+  .gate.g2 .gn{color:var(--hu-fg);}
+  .gate.g3 .gn{color:var(--wa-fg);}
+  .gtag{display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:7px; margin-left:6px; vertical-align:middle;}
+  .gtag.g1{background:var(--ok-bg); color:var(--ok-fg);}
+  .gtag.g2{background:var(--hu-bg); color:var(--hu-fg);}
+  .gtag.g3{background:var(--wa-bg); color:var(--wa-fg);}
+  .reason .why{display:block; color:var(--muted); font-size:12px; margin-top:4px;}
+  .stab{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px;}
+  .stab th,.stab td{border:0.5px solid var(--line); padding:9px 11px; text-align:left;}
+  .stab th{color:var(--muted); font-weight:500; font-size:12px; background:var(--panel);}
+  .stab td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  .stab tr.hl td{background:rgba(15,110,86,.18);}
+  .snote{font-size:12px; color:var(--muted); margin-top:8px;}
   .ptab{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px;}
   .ptab th,.ptab td{border:0.5px solid var(--line); padding:9px 11px; text-align:left;}
   .ptab th{color:var(--muted); font-weight:500; font-size:12px; background:var(--panel);}
@@ -91,6 +110,13 @@
     <div class="m"><div class="l">多言語</div><div class="v">3言語</div></div>
     <div class="m"><div class="l">人間エスカレ</div><div class="v">2</div></div>
   </div>
+
+  <div class="gates">
+    <div class="gate g1"><div class="gn">① 真正性ゲート</div><div class="gd">ナレッジに接地できないこと（被覆不足・無根拠の追加主張）は答えない → 人間へ。捏造・誤回答を構造で防ぐ。</div></div>
+    <div class="gate g2"><div class="gn">② 感情ゲート</div><div class="gd">怒り・クレームのキーワードを検知したら、FAQがヒットしても定型を自動返信せず人間へ。炎上を防ぐ。</div></div>
+    <div class="gate g3"><div class="gn">③ 金銭ゲート</div><div class="gd">返金・補償など金銭が動く判断はAIが事実整理まで・確定は人間。誤補償/不正請求を防ぐ。</div></div>
+  </div>
+  <p class="sect" style="margin-top:-12px">下の各問い合わせを選ぶと、<b>どのゲートがどう働いて「下書き可」か「人間へ」かを判定したか</b>が見えます（実装 <code>aico cs</code> のロジックそのまま）。</p>
 
   <div class="dist">
     <div class="dh">カテゴリ分布（直近7日・自動集計）— 何が多いかが運営の打ち手に直結</div>
@@ -120,44 +146,65 @@
     <p class="pnote">※比較対象＝CS外注 ¥30〜50万/月。その一部を圧縮するだけで月¥5万は回収できます。LLMは学習に使わない商用API・御社ごとにデータ分離。</p>
   </div>
 
+  <div class="sec">
+    <div class="sech"><h2>スケール構造 — 量が増えるほどAI-CSが有利</h2><span class="pill plan">固定＋実費パススルー</span></div>
+    <p class="sect">外注/インハウスCSは件数や人数に比例して費用が増える<b>変動費</b>。AI-CSは月額固定＋LLM実費（¥0.3〜1/件・パススルー）なので、<b>問い合わせが増えても費用はほぼ動かない</b>。量が増えるほど1件あたりが下がる＝スケール構造。</p>
+    <table class="stab">
+      <tr><th>月間問い合わせ</th><th>現行CS（外注/インハウス・変動費）</th><th>AI-CS（固定＋LLM従量）</th><th>1件あたり（AI-CS）</th></tr>
+      <tr><td class="num">3,000件</td><td class="num">¥40万（例）</td><td class="num">¥5万＋LLM≈¥1,000 ≈ <b>¥5.1万</b></td><td class="num">≈ ¥17</td></tr>
+      <tr class="hl"><td class="num">10,000件</td><td class="num">≈¥133万（例・件数比例）</td><td class="num">¥5万＋LLM≈¥3,300 ≈ <b>¥5.3万</b></td><td class="num">≈ ¥5</td></tr>
+    </table>
+    <p class="snote">※現行CS費は「3,000件＝¥40万」を件数比例で伸ばした<b>例</b>（実体制で差し替え）。AI-CSのLLM実費はHaiku 4.5・Claude API実価格（2026-06）の試算（提案書§2-1と整合）。固定¥5万はLite想定。<b>10,000件規模では現行CSが比例増する一方、AI-CSはほぼ¥5万台で吸収＝差が開く。</b></p>
+  </div>
+
   <footer>MIWS — AIネイティブ運用代行。<b>真正性ゲート</b>（ナレッジに無いことは答えない）＋<b>感情エスカレーション</b>（怒っている相手に定型を返さない）＋<b>金銭判断は人間</b>（返金/補償）。学習に使わない商用API（ZDR可）・顧客ごとにデータ分離。※本デモはサンプルFAQの実出力。御社のFAQ・チャネルに差し替えてPoCできます。</footer>
 </div>
 <script>
 const items=[
- {id:"cs0001",q:"ログインできなくなりました",cat:"不具合",ch:"チャット",lang:"日本語",ok:true,conf:0.98,
+ {id:"cs0001",q:"ログインできなくなりました",cat:"不具合",ch:"チャット",lang:"日本語",ok:true,conf:0.98,gate:1,
   draft:"お問い合わせありがとうございます。\n\nまずブラウザのキャッシュ削除 → 別ブラウザ/シークレットウィンドウでお試しください。それでも解決しない場合は、登録メールアドレスを添えてサポートへご連絡ください。",
-  reason:"単一FAQ回答に接地・追加主張なし（被覆率100%）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: 質問がFAQ見出しに一致 → 該当FAQ回答を逐語包含（被覆率100%・FAQ外の追加主張ゼロ）→ 自動下書き可"},
 
- {id:"cs0002",q:"今月の請求額が先月と違います",cat:"請求/支払",ch:"メール",lang:"日本語",ok:true,conf:0.95,
+ {id:"cs0002",q:"今月の請求額が先月と違います",cat:"請求/支払",ch:"メール",lang:"日本語",ok:true,conf:0.95,gate:1,
   ctx:[["アカウント","acme-corp"],["プラン","Business（6/12にUpgrade）"],["請求状態","日割り適用中"]],
   draft:"お問い合わせありがとうございます。\n\nプラン変更があった月は日割り計算が入るため、請求額が変動します。明細は管理画面の「請求 → 利用明細」でご確認いただけます。相違がある場合はレシート番号を添えてご連絡ください。",
-  reason:"請求状態を参照し『日割り』を確認 → FAQ（プラン変更時の請求）に接地。返金の約束はしない（金銭判断は人間）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: プラン変更時の請求FAQ（『日割り計算』）に接地・一致語['請求','日割り','明細']・FAQ外の追加主張なし。返金は約束しない（=金銭ゲートの範囲は人間）"},
 
- {id:"cs0003",q:"監査ログはどこでダウンロードできますか",cat:"使い方",ch:"チャット",lang:"日本語",ok:true,conf:0.99,
+ {id:"cs0003",q:"監査ログはどこでダウンロードできますか",cat:"使い方",ch:"チャット",lang:"日本語",ok:true,conf:0.99,gate:1,
   draft:"お問い合わせありがとうございます。\n\n監査ログは「設定 → セキュリティ → 監査ログ」からCSV/JSONでエクスポートできます（管理者権限が必要です）。",
-  reason:"単一FAQ回答に接地・追加主張なし（被覆率100%）",voc:"VOCに計上 → 「監査ログの導線が分かりにくい」クラスタ（14件）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: 質問がFAQ見出し（監査ログのエクスポート手順）に一致 → 回答を逐語包含・追加主張なし → 自動下書き可",
+  voc:"VOCに計上 → 「監査ログの導線が分かりにくい」クラスタ（14件）"},
 
- {id:"cs0005",q:"How do I set up SSO with SAML?",cat:"設定",ch:"メール",lang:"English",ok:true,conf:0.96,
+ {id:"cs0005",q:"How do I set up SSO with SAML?",cat:"設定",ch:"メール",lang:"English",ok:true,conf:0.96,gate:1,
   draft:"Thank you for reaching out.\n\nYou can configure SAML SSO under Settings → Security → SSO. Enter your IdP metadata URL, map the email attribute, then run a test connection before enforcing it for members.",
-  reason:"言語=英語を自動判定し英語で返信。設定FAQ（SSO/SAML）に接地（多言語CS）"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: 言語=英語を自動判定し英語で返信。SSO/SAML設定FAQに接地（被覆十分・追加主張なし）。多言語でも同じ接地ロジックが効く"},
 
- {id:"cs0006",q:"請問帳單可以開立發票嗎？",cat:"請求/支払",ch:"メール",lang:"繁體中文",ok:true,conf:0.92,
+ {id:"cs0006",q:"請問帳單可以開立發票嗎？",cat:"請求/支払",ch:"メール",lang:"繁體中文",ok:true,conf:0.92,gate:1,
   draft:"感謝您的來信。\n\n您可以在「設定 → 帳單 → 發票資訊」中填寫公司抬頭與統一編號，系統將於每期帳單自動開立發票並寄送至帳單聯絡人信箱。",
-  reason:"請求FAQ（インボイス発行）に接地。言語=繁体中文を自動判定し同言語で返信"},
+  reason:"下書きは単一FAQ回答に接地・追加主張なし（被覆率100%）",
+  why:"真正性ゲート: インボイス発行FAQに接地（被覆十分・FAQ外の追加主張なし）。言語=繁体中文を自動判定し同言語で返信"},
 
- {id:"cs0007",q:"昨日の障害で消えたデータを復旧、無理なら返金してほしい",cat:"返金/補償",ch:"メール",lang:"日本語",ok:false,esc:"human",
+ {id:"cs0007",q:"昨日の障害で消えたデータを復旧、無理なら返金してほしい",cat:"返金/補償",ch:"メール",lang:"日本語",ok:false,esc:"human",gate:3,
   ctx:[["アカウント","globex-inc"],["プラン","Enterprise（年額）"],["障害ログ","6/19 14:05 同期エラー有"],["過去補償","直近12ヶ月 0件"]],
   draft:"【人間確認が必要】障害ログと一致。AIが状況を整理済み。データ復旧の可否・返金/クレジットの判断は担当者が確定してご連絡ください。",
-  reason:"返金/補償＝金銭が動く判断 → AIは事実整理まで・確定は人間（誤補償・不正請求を防ぐゲート）"},
+  reason:"返金/補償＝金銭が動く判断 → AIは事実整理まで・確定は人間",
+  why:"金銭ゲート: 返金/補償は金銭が動く判断 → AIは障害ログ照合など事実整理まで、可否と金額の確定は人間（誤補償・不正請求を防ぐ）"},
 
- {id:"cs0008",q:"APIのレート制限を引き上げてほしいです",cat:"要望",ch:"Slack",lang:"日本語",ok:true,conf:0.9,
+ {id:"cs0008",q:"APIのレート制限を引き上げてほしいです",cat:"要望",ch:"Slack",lang:"日本語",ok:true,conf:0.9,gate:1,
   draft:"ご要望ありがとうございます！\n\n現在のレート上限と用途をプロダクトチームに共有いたします。Enterpriseプランでは上限引き上げのオプションもございますので、必要でしたら担当よりご案内いたします。",
-  reason:"要望は定型お礼で接地（具体的な実装約束はしない）＋VOCへ計上",voc:"VOCに計上 → 「APIレート制限の引き上げ要望」クラスタ（9件）→ 開発へ"},
+  reason:"要望は定型お礼で接地（具体的な実装約束はしない）＋VOCへ計上",
+  why:"真正性ゲート: 要望受領FAQ（お礼＋プロダクト共有）に接地し、上限引き上げの確約など接地外の主張はしない。VOCクラスタに自動計上",
+  voc:"VOCに計上 → 「APIレート制限の引き上げ要望」クラスタ（9件）→ 開発へ"},
 
- {id:"cs0004",q:"二度と使わない、最悪なサービスだ",cat:"クレーム",ch:"チャット",lang:"日本語",ok:false,esc:"human",
+ {id:"cs0004",q:"二度と使わない、最悪なサービスだ",cat:"クレーム",ch:"チャット",lang:"日本語",ok:false,esc:"human",gate:2,
   ctx:[["アカウント","initech"],["過去対応","直近30日 クレーム 2件"],["契約状況","年額・更新2ヶ月前"]],
   draft:"【人間対応】ご不便・ご不快な思いをおかけし申し訳ございません。担当者が内容を確認のうえ、個別にご連絡いたします。",
-  reason:"感情/クレームのシグナルを検知 → 定型を自動返信せず人間が一次対応（炎上回避）。過去対応履歴・契約状況を添えて引き継ぎ"}
+  reason:"感情/クレームのシグナルを検知 → 定型を自動返信せず人間が一次対応",
+  why:"感情ゲート: キーワード『二度と』『最悪』を検知 → FAQがヒットしても定型を自動返信せず人間へ（炎上回避）。過去対応履歴・契約状況を添えて引き継ぎ"}
 ];
 
 const voc=[
@@ -167,15 +214,20 @@ const voc=[
  {t:"請求書/インボイスの分かりにくさ",m:"問い合わせ 6件 / 7日",n:"→ 請求フロー見直しの示唆"}
 ];
 
+const GATE_LABEL={1:"真正性ゲート",2:"感情ゲート",3:"金銭ゲート"};
 function badge(it){
  if(it.ok) return '<span class="badge ok">接地OK・下書き可</span>';
  return '<span class="badge hu">人間へ</span>';
+}
+function gateTag(it){
+ if(!it.gate) return '';
+ return '<span class="gtag g'+it.gate+'">'+GATE_LABEL[it.gate]+'</span>';
 }
 function chips(it){
  return '<span class="chip">'+it.cat+'</span><span class="chip ch">'+it.ch+'</span><span class="chip lang">'+it.lang+'</span>';
 }
 const list=document.getElementById('list');
-list.innerHTML=items.map((it,i)=>'<button class="row" data-i="'+i+'"><div class="q">'+it.q+'</div><div class="meta">'+chips(it)+badge(it)+'</div></button>').join('');
+list.innerHTML=items.map((it,i)=>'<button class="row" data-i="'+i+'"><div class="q">'+it.q+'</div><div class="meta">'+chips(it)+badge(it)+gateTag(it)+'</div></button>').join('');
 
 function render(i){
  const it=items[i];
@@ -195,11 +247,12 @@ function render(i){
   acts='<button class="act primary">人間が対応</button>';
  }
  document.getElementById('detail').innerHTML=
-  '<div class="did">'+it.id+' ・ '+chips(it)+badge(it)+'</div>'
+  '<div class="did">'+it.id+' ・ '+chips(it)+badge(it)+gateTag(it)+'</div>'
   +'<div class="dq">'+it.q+'</div>'
   +ctxHtml
   +'<div class="lab">AIの下書き '+confHtml+'</div><div class="draft">'+it.draft+'</div>'
-  +'<div class="reason"><b>判定:</b> '+it.reason+'</div>'
+  +'<div class="reason"><b>判定:</b> '+it.reason
+    +(it.why?'<span class="why">'+it.why+'</span>':'')+'</div>'
   +(it.voc?'<div class="voc">'+it.voc+'</div>':'')
   +'<div class="acts">'+acts+'</div>'
   +'<div class="learn">↻ 承認時の編集・却下は差分として学習ログに記録 → 精度チューニング／FAQ更新の素（顧客に蓄積・当社が握るOutcomeループ）</div>';
