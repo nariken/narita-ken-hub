@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNS監視・モデレーション デモ — MIWS</title>
+<style>
+  :root{ --teal:#1D9E75; --teal-d:#0F6E56; --ink:#0E0E12; --panel:#16161c; --line:#2a2a33;
+         --muted:#9a9aa6; --ok-bg:#0F6E56; --ok-fg:#9FE1CB; --hu-bg:#5a1d1d; --hu-fg:#f0a0a0;
+         --wa-bg:#5a4a1d; --wa-fg:#f0d79a; --blue:#3a6ea5; }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink); color:#eaeaf0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif; line-height:1.7;}
+  .wrap{max-width:1040px; margin:0 auto; padding:28px 20px 48px;}
+  header{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px;}
+  h1{font-size:22px; font-weight:600; margin:0;}
+  .tag{color:var(--muted); font-size:14px;}
+  .lead{color:#c7c7d2; font-size:14px; margin:6px 0 22px;}
+  .metrics{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:22px;}
+  @media(max-width:760px){.metrics{grid-template-columns:repeat(2,1fr)}}
+  .m{background:var(--panel); border:0.5px solid var(--line); border-radius:12px; padding:13px 15px;}
+  .m .l{font-size:12px; color:var(--muted);}
+  .m .v{font-size:24px; font-weight:600; margin-top:2px;}
+  .m .v.teal{color:var(--teal);}
+  .grid{display:grid; grid-template-columns:1fr 1.25fr; gap:14px;}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .row{width:100%; text-align:left; background:var(--panel); border:0.5px solid var(--line); border-radius:10px; padding:11px 13px; cursor:pointer; color:inherit; margin-bottom:8px;}
+  .row.sel{border-color:var(--teal);}
+  .row .q{font-size:14px; margin-bottom:7px;}
+  .meta{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .chip{font-size:11px; color:var(--muted); border:0.5px solid var(--line); border-radius:8px; padding:2px 8px;}
+  .chip.ch{color:#bcd; border-color:#34465a;}
+  .chip.lang{color:#cbd; border-color:#4a3a5a;}
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:3px 9px; border-radius:8px;}
+  .badge.ok{background:var(--ok-bg); color:var(--ok-fg);}
+  .badge.hu{background:var(--hu-bg); color:var(--hu-fg);}
+  .badge.wa{background:var(--wa-bg); color:var(--wa-fg);}
+  .detail{background:var(--panel); border:0.5px solid var(--line); border-radius:14px; padding:18px 20px; min-height:340px;}
+  .did{font-size:12px; color:var(--muted); display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .dq{font-size:16px; font-weight:600; margin:6px 0 12px;}
+  .ctx{background:#0c0c11; border:0.5px solid var(--line); border-radius:10px; padding:10px 12px; margin:12px 0; font-size:12.5px;}
+  .ctx .ct{font-size:11px; color:var(--muted); margin-bottom:6px; letter-spacing:.04em;}
+  .ctx .cr{display:flex; justify-content:space-between; gap:10px; padding:2px 0;}
+  .ctx .cr span:first-child{color:var(--muted);}
+  .lab{font-size:12px; color:var(--muted); margin:14px 0 5px;}
+  .draft{white-space:pre-wrap; font-size:14px; background:#0c0c11; border:0.5px solid var(--line); border-radius:10px; padding:12px 14px;}
+  .reason{font-size:13px; color:#c7c7d2; margin-top:10px;}
+  .reason .why{display:block; color:var(--muted); font-size:12px; margin-top:4px;}
+  .acts{display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;}
+  button.act{font-size:13px; background:transparent; color:#eaeaf0; border:0.5px solid var(--line); border-radius:8px; padding:8px 14px; cursor:pointer;}
+  button.act.primary{background:var(--teal); border-color:var(--teal); color:#04342C; font-weight:600;}
+  button.act.warn{background:var(--wa-bg); border-color:#7a6320; color:var(--wa-fg); font-weight:600;}
+  button.act.danger{background:var(--hu-bg); border-color:#7a2020; color:var(--hu-fg); font-weight:600;}
+  .sec{margin-top:26px;}
+  .sech{display:flex; align-items:baseline; gap:10px; margin-bottom:4px;}
+  .sech h2{font-size:15px; font-weight:600; margin:0;}
+  .sech .pill{font-size:11px; color:var(--wa-fg); background:var(--wa-bg); border-radius:8px; padding:2px 9px;}
+  .sect{font-size:12.5px; color:var(--muted); margin:0 0 12px;}
+  .dist{background:var(--panel); border:0.5px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:22px;}
+  .dist .dh{font-size:12px; color:var(--muted); margin-bottom:10px;}
+  .brow{display:grid; grid-template-columns:140px 1fr 38px; align-items:center; gap:10px; margin:5px 0; font-size:12.5px;}
+  .brow .bn{color:#c7c7d2; white-space:nowrap;}
+  .bar{height:8px; background:#0c0c11; border-radius:6px; overflow:hidden;}
+  .bar i{display:block; height:100%; background:var(--teal); border-radius:6px;}
+  .brow .bp{color:var(--muted); text-align:right;}
+  .learn{font-size:12px; color:var(--ok-fg); margin-top:12px; border-top:0.5px dashed var(--line); padding-top:10px;}
+  .pill.plan{color:var(--ok-fg); background:var(--ok-bg);}
+  .gates{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px;}
+  @media(max-width:760px){.gates{grid-template-columns:1fr}}
+  .gate{background:var(--panel); border:0.5px solid var(--line); border-radius:12px; padding:12px 14px;}
+  .gate .gn{font-size:13px; font-weight:600; margin-bottom:4px;}
+  .gate .gd{font-size:12px; color:var(--muted);}
+  .gate.g1 .gn{color:var(--ok-fg);}
+  .gate.g2 .gn{color:var(--hu-fg);}
+  .gate.g3 .gn{color:var(--wa-fg);}
+  .gtag{display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:7px; margin-left:6px; vertical-align:middle;}
+  .gtag.g1{background:var(--ok-bg); color:var(--ok-fg);}
+  .gtag.g2{background:var(--hu-bg); color:var(--hu-fg);}
+  .gtag.g3{background:var(--wa-bg); color:var(--wa-fg);}
+  .ptab{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px;}
+  .ptab th,.ptab td{border:0.5px solid var(--line); padding:9px 11px; text-align:left;}
+  .ptab th{color:var(--muted); font-weight:500; font-size:12px; background:var(--panel);}
+  .ptab tr.hl td{background:rgba(15,110,86,.18);}
+  .ptab .pl{font-weight:600;}
+  .pnote{font-size:12px; color:var(--muted); margin-top:8px;}
+  footer{color:var(--muted); font-size:12px; margin-top:28px; border-top:0.5px solid var(--line); padding-top:14px;}
+</style>
+<script data-goatcounter="https://nariken.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>SNS監視・モデレーション</h1><span class="tag">ゲームIP運営向けデモ — 24時間365日、AIが見張る</span></header>
+  <p class="lead">X・YouTube・TikTok の投稿／コメント／メンションをAIが<b>24時間365日 集約→言語判定→分類→ガイドライン照合</b>。<b>二次創作ガイドライン違反・炎上の芽・なりすまし・ネタバレ</b>を検知して、リスクの高いものだけ<b>人へ即通知</b>。削除・通報・公式対応の最終判断は御社（または当社Managed）。</p>
+
+  <div class="metrics">
+    <div class="m"><div class="l">監視プラットフォーム</div><div class="v teal">3</div></div>
+    <div class="m"><div class="l">監視投稿 / 24h</div><div class="v">1,240</div></div>
+    <div class="m"><div class="l">自動仕分け率</div><div class="v">92%</div></div>
+    <div class="m"><div class="l">要対応エスカレ</div><div class="v">3</div></div>
+    <div class="m"><div class="l">平均検知速度</div><div class="v">即時 / 24h</div></div>
+  </div>
+
+  <div class="gates">
+    <div class="gate g1"><div class="gn">① ガイドライン適合ゲート</div><div class="gd">二次創作ガイドライン（商用利用・クレジット・改変範囲）に照合。適合は様子見、逸脱は人へ通知。判定基準は御社ガイドラインを接地。</div></div>
+    <div class="gate g2"><div class="gn">② 炎上・誹謗中傷ゲート</div><div class="gd">炎上の芽・個人攻撃・風評・拡散速度の異常を検知 → 即エスカレ。早期に気づくほど被害が小さい。</div></div>
+    <div class="gate g3"><div class="gn">③ なりすまし・ネタバレゲート</div><div class="gd">偽公式・詐欺アカウント、重大ネタバレの拡散を検知。なりすましは即通報候補、ネタバレは拡散度で通知。</div></div>
+  </div>
+  <p class="sect" style="margin-top:-12px">下の各投稿を選ぶと、<b>どのゲートがどう働いて「様子見／要確認／緊急エスカレ」を判定したか</b>と、<b>推奨アクション</b>が見えます。判断材料はAIが整える＝最終判断は人。</p>
+
+  <div class="dist">
+    <div class="dh">検知カテゴリ分布（直近24h・自動集計）— 何が起きているかが運営の打ち手に直結</div>
+    <div id="dist"></div>
+  </div>
+
+  <div class="grid">
+    <div id="list"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sech"><h2>24時間365日 × 人は要対応だけ見る</h2><span class="pill plan">監視そのものを巻き取る</span></div>
+    <p class="sect">大量の投稿を人が常時見張るのは非現実的（夜間・休日・海外時間が穴になる）。AIが全量を24/365で見て、<b>リスクの高い数件だけ</b>を人に上げる。担当者は「全部を追う」から「上がってきたものを裁く」へ。多言語（海外ファン）も言語非依存で同じ精度。</p>
+  </div>
+
+  <div class="sec">
+    <div class="sech"><h2>料金（SNS監視モジュール・たたき台）</h2><span class="pill plan">固定は非属人・LLMは実費パススルー</span></div>
+    <p class="sect">監視は「全量を見るAI」で、人手は要対応だけ。月額固定はAI監視レイヤー（非属人）に対して、LLMは検知処理の実費を透明に上乗せ。※実額はヒアリング（対象PF・監視volume・対応範囲）後に確定します。</p>
+    <table class="ptab">
+      <tr><th>プラン</th><th>初期費</th><th>月額固定</th><th>従量</th><th>中身</th></tr>
+      <tr class="hl"><td class="pl">監視PoC（本命・1社目）</td><td>¥0〜20万</td><td>¥3〜5万</td><td>＋LLM実費</td><td>X/YT/TikTok 監視・検知して通知まで・判断は御社／1〜3ヶ月で実証</td></tr>
+      <tr><td class="pl">標準（監視＋一次対応）</td><td>¥20〜40万</td><td>¥5〜10万</td><td>＋LLM実費</td><td>＋公式メンションの一次対応下書き・モデレーション起案</td></tr>
+      <tr><td class="pl">Managed（任意）</td><td>別</td><td>別</td><td>＋LLM実費</td><td>削除申請・通報・公式対応まで当社が代行</td></tr>
+    </table>
+    <p class="pnote">※金額はヒアリング前の<b>たたき台</b>（対象PF・監視volume・対応範囲で確定）。LLMは学習に使わない商用API・御社ごとにデータ分離。サーバ／インフラ監視は本デモの対象外（別途ご相談）。</p>
+  </div>
+
+  <footer>MIWS — AIネイティブ運用代行。<b>ガイドライン適合</b>（御社の二次創作ガイドラインを接地）＋<b>炎上の早期検知</b>（誹謗中傷・拡散異常）＋<b>なりすまし／ネタバレ検知</b>。AIが24/365で全量を見て、人は要対応だけ。最終判断は御社。※本デモはサンプル投稿の判定例。御社のガイドライン・対象アカウントに差し替えてPoCできます。</footer>
+</div>
+<script>
+const items=[
+ {id:"sns0001",q:"新イベントのストーリー神すぎた…！みんなもう読んだ？ #ゲーム名",pf:"X",lang:"日本語",st:"ok",gate:1,
+  reason:"公式ガイドラインに適合・ポジティブな言及（様子見）",
+  why:"ガイドライン適合ゲート: 通常のファン投稿（感想・拡散）。商用利用・改変・誹謗なし → 適合と判定し様子見（運営対応不要）。ポジティブ反応として集計のみ。",
+  act:"none"},
+
+ {id:"sns0002",q:"このキャラのアクリルスタンド作って販売します！DMで受注受け付け中💰",pf:"X",lang:"日本語",st:"wa",gate:1,
+  ctx:[["投稿者","フォロワー 8,400"],["検知根拠","『販売』『受注』＋IP画像"],["該当規約","二次創作ガイドライン 商用利用条項"]],
+  reason:"二次創作の商用利用＝ガイドライン逸脱の可能性 → 人へ通知",
+  why:"ガイドライン適合ゲート: 『販売』『受注』＋対象IPの画像 → 二次創作ガイドラインの商用利用条項に抵触の可能性。AIは該当条項を添えて通知（断定・直接連絡はしない＝最終判断は御社）。",
+  act:"notify"},
+
+ {id:"sns0003",q:"【ネタバレ注意】最終章のラスト、◯◯が△△だった件まとめてみた",pf:"YouTube",lang:"日本語",st:"wa",gate:3,
+  ctx:[["形式","解説動画・公開24h"],["再生","12,400（拡散中）"],["検知根拠","最終章の結末描写＋拡散速度"]],
+  reason:"重大ネタバレ＋拡散度が高い → 人へ通知（様子見閾値超え）",
+  why:"なりすまし・ネタバレゲート: 最終章の結末に該当する語を検知＋再生の伸びが閾値超え → 拡散リスクありとして通知。ネタバレは即NGでなく『重大度×拡散度』で要否を判定（過剰検知を避ける）。",
+  act:"notify"},
+
+ {id:"sns0004",q:"運営マジ終わってる。この調子なら開発の◯◯は無能。みんなで凸るぞ",pf:"X",lang:"日本語",st:"hu",gate:2,
+  ctx:[["検知根拠","個人攻撃＋扇動『凸るぞ』"],["拡散","引用RT 30件 / 15分（異常）"],["類似投稿","直近1h で 8件（クラスタ化）"]],
+  reason:"個人攻撃＋扇動＋拡散異常 → 炎上の芽として緊急エスカレ",
+  why:"炎上・誹謗中傷ゲート: 個人名への攻撃＋扇動表現＋短時間の拡散異常（引用RT速度・類似投稿クラスタ）を同時検知 → 炎上の初期段階と判断し緊急エスカレ。早期に上げるほど初動が打てる。",
+  act:"escalate"},
+
+ {id:"sns0005",q:"【公式】1周年記念！豪華プレゼント企画🎁 下記リンクから受取→ bit.ly/xxxx",pf:"TikTok",lang:"日本語",st:"hu",gate:3,
+  ctx:[["アカウント","公式に酷似（名前・アイコン模倣）"],["検知根拠","外部短縮URL＋『公式』詐称＋景品誘導"],["公式認証","本物の公式とハンドル不一致"]],
+  reason:"なりすまし＋詐欺誘導の疑い → 緊急エスカレ（通報候補）",
+  why:"なりすまし・ネタバレゲート: 公式を騙る名称・アイコン＋外部短縮URLへの景品誘導 → なりすまし／フィッシングの疑い。本物の公式ハンドルと照合し不一致を確認 → 緊急エスカレ・各PFへの通報候補として整理。",
+  act:"report"},
+
+ {id:"sns0006",q:"@official_game when is the global release? I've been waiting so long 🥺",pf:"X",lang:"English",st:"wa",gate:1,
+  reason:"公式宛の問い合わせメンション（多言語）→ CS連携で一次対応下書き",
+  why:"ガイドライン適合ゲート: 違反でなく公式宛の問い合わせメンション。言語=英語を自動判定 → CSナレッジに接地できれば一次対応の下書きを生成（多言語）。接地できない未確定情報（配信日未定）は断定せず人へ。",
+  act:"reply"},
+
+ {id:"sns0007",q:"ファンアート描きました！※二次創作ガイドラインに従っています(@公式 明記)",pf:"X",lang:"日本語",st:"ok",gate:1,
+  reason:"クレジット明記・非商用＝ガイドライン適合（様子見）",
+  why:"ガイドライン適合ゲート: 二次創作だがクレジット明記・非商用・改変範囲内 → ガイドライン適合と判定し様子見。健全なUGCは止めない（過剰モデレーションを避ける）。エンゲージメントとして集計。",
+  act:"none"},
+
+ {id:"sns0008",q:"課金して石買ったのに反映されないんだけど。公式どうなってんの",pf:"YouTube",lang:"日本語",st:"wa",gate:1,
+  ctx:[["形式","公式動画へのコメント"],["分類","問い合わせ（課金/反映）＋軽い不満"],["検知根拠","『反映されない』＝既知FAQ"]],
+  reason:"SNS上の問い合わせ（不満トーン）→ CS連携・一次対応下書き",
+  why:"ガイドライン適合ゲート: 違反でなくSNS上の問い合わせ。CSの反映遅延FAQに接地して一次対応の下書きを生成可。ただし不満トーンを含むため、感情が強ければCS側の感情ゲートで人へ（CSデモと同一ロジックを共有）。",
+  act:"reply"}
+];
+
+const GATE_LABEL={1:"ガイドライン適合",2:"炎上・誹謗中傷",3:"なりすまし・ネタバレ"};
+const ST={ok:{cls:"ok",txt:"OK・様子見"},wa:{cls:"wa",txt:"要確認・通知"},hu:{cls:"hu",txt:"緊急・即エスカレ"}};
+function badge(it){return '<span class="badge '+ST[it.st].cls+'">'+ST[it.st].txt+'</span>';}
+function gateTag(it){return it.gate?'<span class="gtag g'+it.gate+'">'+GATE_LABEL[it.gate]+'</span>':'';}
+function chips(it){return '<span class="chip ch">'+it.pf+'</span><span class="chip lang">'+it.lang+'</span>';}
+const list=document.getElementById('list');
+list.innerHTML=items.map((it,i)=>'<button class="row" data-i="'+i+'"><div class="q">'+it.q+'</div><div class="meta">'+chips(it)+badge(it)+gateTag(it)+'</div></button>').join('');
+
+const ACT={
+ none:'<button class="act">問題なし（様子見）</button>',
+ notify:'<button class="act warn">御社へ通知（該当条項つき）</button><button class="act">様子見に変更</button>',
+ reply:'<button class="act primary">一次対応の下書きを承認</button><button class="act">人間が対応</button>',
+ escalate:'<button class="act danger">緊急エスカレ（担当へ即通知）</button>',
+ report:'<button class="act danger">通報候補として整理</button><button class="act">御社へ通知</button>'
+};
+function render(i){
+ const it=items[i];
+ document.querySelectorAll('.row').forEach((b,j)=>b.classList.toggle('sel',j===i));
+ let ctxHtml='';
+ if(it.ctx){ctxHtml='<div class="ctx"><div class="ct">検知コンテキスト</div>'+it.ctx.map(r=>'<div class="cr"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>').join('')+'</div>';}
+ document.getElementById('detail').innerHTML=
+  '<div class="did">'+it.id+' ・ '+chips(it)+badge(it)+gateTag(it)+'</div>'
+  +'<div class="dq">'+it.q+'</div>'
+  +ctxHtml
+  +'<div class="reason"><b>判定:</b> '+it.reason+(it.why?'<span class="why">'+it.why+'</span>':'')+'</div>'
+  +'<div class="acts">'+ACT[it.act]+'</div>'
+  +'<div class="learn">↻ 通知/様子見/エスカレの人の判断は差分として学習ログに記録 → 検知精度のチューニング・御社ガイドラインの解釈を学習（顧客に蓄積するOutcomeループ）</div>';
+}
+document.querySelectorAll('.row').forEach(b=>b.addEventListener('click',()=>render(+b.dataset.i)));
+render(0);
+
+const dist=[["適合（問題なし）",64],["問い合わせメンション",14],["ガイドライン違反（二次創作）",9],["ネタバレ拡散",6],["炎上の芽・誹謗中傷",4],["なりすまし・詐欺",3]];
+document.getElementById('dist').innerHTML=dist.map(d=>
+ '<div class="brow"><div class="bn">'+d[0]+'</div><div class="bar"><i style="width:'+(d[1]/64*100)+'%"></i></div><div class="bp">'+d[1]+'%</div></div>').join('');
+</script>
+</body>
+</html>
