@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI-CS運用代行 デモ（汎用/SaaS）— MIWS</title>
+<link rel="canonical" href="https://nariken.ai/ai-cs-demo/">
+<meta name="robots" content="index,follow">
 <style>
   :root{ --teal:#1D9E75; --teal-d:#0F6E56; --ink:#0E0E12; --panel:#16161c; --line:#2a2a33;
          --muted:#9a9aa6; --ok-bg:#0F6E56; --ok-fg:#9FE1CB; --hu-bg:#5a1d1d; --hu-fg:#f0a0a0;
@@ -136,21 +138,21 @@
 
   <div class="sec">
     <div class="sech"><h2>料金（PoC）</h2><span class="pill plan">固定は非属人・LLMは実費パススルー</span></div>
-    <p class="sect">月額固定はAI運用レイヤー（非属人のインフラ／ダッシュボード）に対して。LLMは件数連動の実費を透明に上乗せ＝問い合わせが増えても"単価が上がる"ことはなく、量が増えるほど1件あたりは下がります。</p>
+    <p class="sect">月額固定は非属人のAI運用レイヤー（ダッシュボード等）の<b>サービス料</b>です。これとは別に、<b>AI実行基盤のインフラ実費</b>と<b>LLM利用料（トークン従量）</b>を、いずれも<b>実費パススルー</b>で申し受けます。問い合わせが増えても"単価が上がる"ことはなく、量が増えるほど1件あたりは下がります。</p>
     <table class="ptab">
-      <tr><th>プラン</th><th>初期費</th><th>月額固定</th><th>従量</th><th>中身</th></tr>
-      <tr class="hl"><td class="pl">Lite（本命）</td><td>¥20〜50万</td><td>¥5万</td><td>＋LLM実費 ¥0.3〜1/件</td><td>AI運用レイヤー・承認は御社</td></tr>
+      <tr><th>プラン</th><th>初期費</th><th>月額固定（サービス料）</th><th>従量（実費パススルー）</th><th>中身</th></tr>
+      <tr class="hl"><td class="pl">Lite（本命）</td><td>¥20〜50万</td><td>¥5万</td><td>＋LLM従量 ¥0.3〜1/件＋インフラ実費</td><td>AI運用レイヤー・承認は御社</td></tr>
       <tr><td class="pl">1社目PoC</td><td>¥0〜20万</td><td>¥3〜5万</td><td>＋LLM実費</td><td>効果を数字で実証・1〜3ヶ月</td></tr>
       <tr><td class="pl">Managed（任意）</td><td>別</td><td>別</td><td>＋LLM実費</td><td>承認も当社が代行</td></tr>
     </table>
-    <p class="pnote">※比較対象＝CS外注 ¥30〜50万/月。その一部を圧縮するだけで月¥5万は回収できます。LLMは学習に使わない商用API・御社ごとにデータ分離。</p>
+    <p class="pnote">※表の月額は<b>サービス料</b>。別途、<b>AI実行基盤のインフラ実費</b>と<b>LLM従量</b>を実費パススルーで申し受けます（データのin-region要件があるエンタープライズ用途では、お客様のAWS環境をご準備いただき当社は構築・運用のみ＝インフラ費はお客様に直接発生）。比較対象＝CS外注 ¥30〜50万/月。その一部を圧縮するだけでサービス料 月¥5万は回収できます。LLMは学習に使わない商用API・御社ごとにデータ分離。</p>
   </div>
 
   <div class="sec">
     <div class="sech"><h2>スケール構造 — 量が増えるほどAI-CSが有利</h2><span class="pill plan">固定＋実費パススルー</span></div>
-    <p class="sect">外注/インハウスCSは件数や人数に比例して費用が増える<b>変動費</b>。AI-CSは月額固定＋LLM実費（¥0.3〜1/件・パススルー）なので、<b>問い合わせが増えても費用はほぼ動かない</b>。量が増えるほど1件あたりが下がる＝スケール構造。</p>
+    <p class="sect">外注/インハウスCSは件数や人数に比例して費用が増える<b>変動費</b>。AI-CSはサービス料の月額固定＋LLM・インフラ実費（¥0.3〜1/件・実費パススルー）なので、<b>サービス料は問い合わせが増えてもほぼ動かない</b>。量が増えるほど1件あたりが下がる＝スケール構造。</p>
     <table class="stab">
-      <tr><th>月間問い合わせ</th><th>現行CS（外注/インハウス・変動費）</th><th>AI-CS（固定＋LLM従量）</th><th>1件あたり（AI-CS）</th></tr>
+      <tr><th>月間問い合わせ</th><th>現行CS（外注/インハウス・変動費）</th><th>AI-CS（サービス料固定＋LLM・インフラ実費）</th><th>1件あたり（AI-CS）</th></tr>
       <tr><td class="num">3,000件</td><td class="num">¥40万（例）</td><td class="num">¥5万＋LLM≈¥1,000 ≈ <b>¥5.1万</b></td><td class="num">≈ ¥17</td></tr>
       <tr class="hl"><td class="num">10,000件</td><td class="num">≈¥133万（例・件数比例）</td><td class="num">¥5万＋LLM≈¥3,300 ≈ <b>¥5.3万</b></td><td class="num">≈ ¥5</td></tr>
     </table>
