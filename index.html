@@ -70,7 +70,26 @@
   .nav a:last-child{color:var(--paper-mut)}
 
   /* ── Hero ── */
-  .hero{padding:74px 0 20px}
+  .hero{position:relative; padding:74px 0 20px}
+  .hero .eyebrow,.hero h1,.hero .sign,.hero .cta,.hero .status{position:relative; z-index:1}
+  /* 幾何学＝設計図的な未来感の背景（自己完結・右寄せ・左へフェード） */
+  .hero-bg{position:absolute; inset:-30px -28px 0; z-index:0; pointer-events:none; overflow:hidden}
+  .hero-bg .grid{position:absolute; inset:0;
+    background-image:linear-gradient(rgba(150,196,210,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(150,196,210,.05) 1px,transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(115% 95% at 82% 42%, #000 20%, transparent 72%);
+            mask-image:radial-gradient(115% 95% at 82% 42%, #000 20%, transparent 72%)}
+  .hb-svg{position:absolute; right:-4%; top:52%; transform:translateY(-50%);
+    width:min(720px,66%); height:auto; opacity:.5;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 46%);
+            mask-image:linear-gradient(90deg, transparent 0%, #000 46%)}
+  .hb-pulse{transform-box:fill-box; transform-origin:center}
+  @media(prefers-reduced-motion:no-preference){
+    .hb-pulse{animation:hbpulse 3.6s ease-in-out infinite}
+    @keyframes hbpulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:0;transform:scale(1.9)}}
+  }
+  @media(max-width:720px){.hb-svg{opacity:.3; right:-28%; width:118%}}
   .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.26em;
     color:var(--ochre); margin:0 0 26px; display:flex; align-items:center; gap:12px}
   .eyebrow::after{content:""; height:1px; width:64px; background:var(--hair)}
@@ -220,6 +239,50 @@
 
     <!-- Hero -->
     <section class="hero">
+      <div class="hero-bg" aria-hidden="true">
+        <span class="grid"></span>
+        <svg class="hb-svg" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="hbglow" x="-70%" y="-70%" width="240%" height="240%">
+              <feGaussianBlur stdDeviation="6" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <g stroke="rgba(150,196,210,.5)" stroke-width="1">
+            <circle cx="860" cy="350" r="300" stroke-dasharray="2 8" opacity=".5"/>
+            <circle cx="860" cy="350" r="252" opacity=".32"/>
+            <polygon points="860,140 1041.9,245 1041.9,455 860,560 678.1,455 678.1,245" opacity=".7"/>
+            <polygon points="860,210 981.2,280 981.2,420 860,490 738.8,420 738.8,280" opacity=".5"/>
+            <polygon points="860,272 927.5,311 927.5,389 860,428 792.5,389 792.5,311" opacity=".4"/>
+            <line x1="678.1" y1="245" x2="1041.9" y2="455" opacity=".25"/>
+            <line x1="1041.9" y1="245" x2="678.1" y2="455" opacity=".25"/>
+            <line x1="860" y1="140" x2="860" y2="560" opacity=".16"/>
+            <line x1="1041.9" y1="245" x2="1156" y2="182" opacity=".3"/>
+            <line x1="1041.9" y1="455" x2="1156" y2="520" opacity=".3"/>
+            <line x1="678.1" y1="245" x2="566" y2="182" opacity=".3"/>
+          </g>
+          <g fill="rgba(150,196,210,.7)">
+            <circle cx="860" cy="140" r="3"/>
+            <circle cx="1041.9" cy="455" r="3"/>
+            <circle cx="678.1" cy="455" r="3"/>
+            <circle cx="678.1" cy="245" r="3"/>
+            <circle cx="860" cy="560" r="2.5"/>
+          </g>
+          <g stroke="rgba(150,196,210,.4)" stroke-width="1">
+            <path d="M600 300 h16 M608 292 v16"/>
+            <path d="M1122 382 h16 M1130 374 v16"/>
+            <path d="M902 602 h14 M909 595 v14"/>
+          </g>
+          <g stroke="rgba(150,196,210,.3)" stroke-width="1">
+            <line x1="700" y1="90" x2="1020" y2="90"/>
+            <line x1="700" y1="84" x2="700" y2="96"/>
+            <line x1="860" y1="84" x2="860" y2="96"/>
+            <line x1="1020" y1="84" x2="1020" y2="96"/>
+          </g>
+          <g filter="url(#hbglow)"><circle cx="1041.9" cy="245" r="5" fill="#E0A32E"/></g>
+          <circle class="hb-pulse" cx="1041.9" cy="245" r="12" fill="none" stroke="#E0A32E" stroke-width="1" opacity=".5"/>
+        </svg>
+      </div>
       <p class="eyebrow">NARIKEN.AI ── 公開工房 / OPEN WORKSHOP</p>
       <h1>年商10億の会社を、<span class="nw">AIで作り替えている<span class="n">工房</span></span>。<br>その全工程を、ここで公開している。</h1>
       <p class="sign">作れる人は、一万人。<em>自社を10倍にした人は、一人。</em></p>
@@ -242,7 +305,7 @@
       <div class="sec-head">
         <span class="sec-kicker">── WORKSHOP ／ 状態別に並ぶ製品</span>
       </div>
-      <p class="sec-lede">放送局ではなく、工房です。並んでいるのは番組ではなく、<em>状態の違う製品と、その制作ログ</em>。手前が生まれたて、奥が卒業した製品。</p>
+      <p class="sec-lede">この工房には、いま手がけている製品が<em>"仕上がり具合"の順</em>に並んでいます。左＝まだ研究中のもの、真ん中＝公開しながら作っている試作、右＝すでに実企業で毎日動いている完成品。その制作ログも、一緒に。</p>
       <div class="shelf">
 
         <!-- ① 研究中 ── フィジカルAI（観る／弱） -->
