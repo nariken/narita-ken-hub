@@ -40,9 +40,12 @@
 </script>
 <style>
   :root{
-    --ink:#0E1520; --ink-2:#131C25; --paper:#F3EFE6; --paper-mut:#AAB2BB;
-    --paper-faint:#8593A3; --ochre:#E0A32E; --live:#57C98A; --hair:rgba(243,239,230,.12);
-    --card:rgba(243,239,230,.03); --card-hair:rgba(243,239,230,.1);
+    --ink:#0B1219; --ink-2:#0E1520; --vignette:#070B10;
+    --paper:#F3EFE6; --paper-mut:#AEB7C0; --paper-faint:#7C8A99;
+    --ochre:#E0A32E; --ochre-hi:#EEB443;
+    --cyan:150,196,210;
+    --live:#57C98A;
+    --hair:rgba(243,239,230,.12); --card:rgba(243,239,230,.025); --card-hair:rgba(243,239,230,.1);
     --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Songti SC",Georgia,serif;
     --sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,Meiryo,system-ui,-apple-system,sans-serif;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -51,126 +54,121 @@
   ::selection{background:var(--ochre);color:#171208}
   a:focus-visible{outline:2px solid var(--ochre);outline-offset:3px;border-radius:2px}
   html{scroll-behavior:smooth}
-  .page{background:
-      radial-gradient(120% 60% at 50% -6%, #17222E 0%, var(--ink) 48%),
+  .page{
+    background:
+      radial-gradient(130% 80% at 78% 8%, rgba(224,163,46,.05), transparent 46%),
+      radial-gradient(120% 70% at 50% -8%, #16212D 0%, var(--ink-2) 46%),
       var(--ink);
     color:var(--paper); font-family:var(--sans);
-    min-height:100vh; -webkit-font-smoothing:antialiased; overflow-x:hidden}
-  .wrap{max-width:1000px; margin:0 auto; padding:0 28px}
+    -webkit-font-smoothing:antialiased; overflow-x:hidden; min-height:100vh}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 30px}
+
+  .page::before{content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(var(--cyan),.028) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(var(--cyan),.028) 1px,transparent 1px);
+    background-size:52px 52px;
+    -webkit-mask-image:radial-gradient(120% 90% at 70% 20%, #000 30%, transparent 78%);
+            mask-image:radial-gradient(120% 90% at 70% 20%, #000 30%, transparent 78%)}
+  .page>*{position:relative; z-index:1}
 
   /* ── Topbar ── */
   .topbar{display:flex; justify-content:space-between; align-items:center;
-    padding:26px 0; border-bottom:1px solid var(--hair)}
-  .brand{font-family:var(--mono); font-size:13px; letter-spacing:.24em; color:var(--paper)}
+    padding:24px 0; border-bottom:1px solid var(--hair)}
+  .brand{font-family:var(--mono); font-size:12.5px; letter-spacing:.24em; color:var(--paper)}
   .brand b{color:var(--ochre); font-weight:600}
-  .nav{font-family:var(--sans); font-size:12.5px; letter-spacing:.08em; color:var(--paper-faint);
-    display:flex; gap:22px}
+  .nav{display:flex; gap:24px; font-size:12.5px; letter-spacing:.06em; color:var(--paper-faint)}
   .nav a{color:inherit; text-decoration:none; transition:color .2s}
   .nav a:hover{color:var(--ochre)}
-  .nav a:last-child{color:var(--paper-mut)}
 
   /* ── Hero ── */
-  .hero{position:relative; padding:74px 0 20px}
-  .hero .eyebrow,.hero h1,.hero .sign,.hero .cta,.hero .status{position:relative; z-index:1}
-  /* 幾何学＝設計図的な未来感の背景（自己完結・右寄せ・左へフェード） */
-  .hero-bg{position:absolute; inset:-30px -28px 0; z-index:0; pointer-events:none; overflow:hidden}
-  .hero-bg .grid{position:absolute; inset:0;
-    background-image:linear-gradient(rgba(150,196,210,.05) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(150,196,210,.05) 1px,transparent 1px);
-    background-size:46px 46px;
-    -webkit-mask-image:radial-gradient(115% 95% at 82% 42%, #000 20%, transparent 72%);
-            mask-image:radial-gradient(115% 95% at 82% 42%, #000 20%, transparent 72%)}
-  .hb-svg{position:absolute; right:-4%; top:52%; transform:translateY(-50%);
-    width:min(720px,66%); height:auto; opacity:.5;
-    -webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 46%);
-            mask-image:linear-gradient(90deg, transparent 0%, #000 46%)}
-  .hb-pulse{transform-box:fill-box; transform-origin:center}
-  @media(prefers-reduced-motion:no-preference){
-    .hb-pulse{animation:hbpulse 3.6s ease-in-out infinite}
-    @keyframes hbpulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:0;transform:scale(1.9)}}
-  }
-  @media(max-width:720px){.hb-svg{opacity:.3; right:-28%; width:118%}}
-  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.26em;
-    color:var(--ochre); margin:0 0 26px; display:flex; align-items:center; gap:12px}
-  .eyebrow::after{content:""; height:1px; width:64px; background:var(--hair)}
-  h1{font-family:var(--serif); font-weight:600; margin:0;
-    font-size:clamp(28px,7.4vw,56px); line-height:1.4; letter-spacing:.01em;
-    color:var(--paper); text-wrap:balance}
+  .hero{display:grid; grid-template-columns:1.02fr .98fr; gap:34px; align-items:center; padding:60px 0 28px}
+  .h-copy{min-width:0}
+  .eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.26em; color:var(--ochre);
+    margin:0 0 24px; display:flex; align-items:center; gap:12px}
+  .eyebrow::after{content:""; height:1px; flex:1; max-width:90px; background:var(--hair)}
+  h1{font-family:var(--serif); font-weight:600; margin:0; color:var(--paper);
+    font-size:clamp(29px,4.3vw,52px); line-height:1.34; letter-spacing:.012em; text-wrap:balance}
   h1 .n{color:var(--ochre); font-style:normal}
   h1 .nw{white-space:nowrap}
-  /* 看板（確定コピー・改変禁止） */
-  .sign{font-family:var(--serif); font-weight:500; font-size:clamp(17px,2.7vw,24px);
-    line-height:1.7; color:var(--paper-mut); margin:28px 0 0; letter-spacing:.02em; text-wrap:balance}
-  .sign em{font-style:normal; color:var(--paper);
-    border-bottom:1px solid rgba(224,163,46,.55); padding-bottom:2px}
-  .lede{font-size:clamp(15px,1.9vw,17.5px); line-height:2.0; color:var(--paper-mut);
-    max-width:62ch; margin:30px 0 0; letter-spacing:.01em}
-  .lede em{color:var(--paper); font-style:normal; border-bottom:1px solid rgba(224,163,46,.5); padding-bottom:1px}
+  .sign{font-family:var(--serif); font-weight:500; margin:26px 0 0;
+    font-size:clamp(16px,2.1vw,22px); line-height:1.7; color:var(--paper-mut); letter-spacing:.02em; text-wrap:balance}
+  .sign em{font-style:normal; color:var(--paper); border-bottom:1px solid rgba(224,163,46,.55); padding-bottom:2px}
 
-  .cta{display:flex; gap:14px; flex-wrap:wrap; margin:38px 0 0}
-  .btn{font-family:var(--sans); font-size:14.5px; letter-spacing:.04em; text-decoration:none;
-    padding:15px 26px; border-radius:2px; transition:transform .2s, background .2s, border-color .2s, color .2s;
-    display:inline-flex; align-items:center; gap:9px}
-  .btn.primary{background:var(--ochre); color:#171208; font-weight:600}
-  .btn.primary:hover{transform:translateY(-1px); background:#EEB443}
-  .btn.secondary{border:1px solid rgba(224,163,46,.45); color:var(--ochre); background:rgba(224,163,46,.06)}
+  .cta{display:flex; gap:13px; flex-wrap:wrap; margin:34px 0 0}
+  .btn{font-family:var(--sans); font-size:14px; letter-spacing:.04em; text-decoration:none; cursor:pointer;
+    padding:14px 24px; border-radius:2px; border:1px solid transparent;
+    display:inline-flex; align-items:center; gap:9px;
+    transition:transform .2s, background .2s, border-color .2s, color .2s}
+  .btn.primary{background:var(--ochre); color:#171208; font-weight:600; box-shadow:0 12px 34px -14px rgba(224,163,46,.6)}
+  .btn.primary:hover{transform:translateY(-1px); background:var(--ochre-hi)}
+  .btn.secondary{border-color:rgba(224,163,46,.45); color:var(--ochre); background:rgba(224,163,46,.06)}
   .btn.secondary:hover{background:rgba(224,163,46,.13); border-color:var(--ochre)}
-  .btn.ghost{border:1px solid rgba(243,239,230,.28); color:var(--paper)}
+  .btn.ghost{border-color:rgba(243,239,230,.26); color:var(--paper)}
   .btn.ghost:hover{border-color:var(--ochre); color:var(--ochre)}
-  .btn.sm{font-size:13px; padding:12px 18px}
+  .btn.sm{font-size:13px; padding:11px 17px}
 
-  .status{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center;
-    margin:48px 0 0; padding:16px 0 0; border-top:1px solid var(--hair);
-    font-family:var(--mono); font-size:12px; letter-spacing:.06em; color:var(--paper-faint);
-    font-variant-numeric:tabular-nums}
+  /* ── Hero key visual ── */
+  .h-vis{position:relative; min-width:0}
+  .h-vis .frame span{position:absolute; width:16px; height:16px; color:rgba(var(--cyan),.4)}
+  .h-vis .frame .tl{top:0; left:0; border-top:1px solid currentColor; border-left:1px solid currentColor}
+  .h-vis .frame .tr{top:0; right:0; border-top:1px solid currentColor; border-right:1px solid currentColor}
+  .h-vis .frame .bl{bottom:0; left:0; border-bottom:1px solid currentColor; border-left:1px solid currentColor}
+  .h-vis .frame .br{bottom:0; right:0; border-bottom:1px solid currentColor; border-right:1px solid currentColor}
+  .h-vis .cap{position:absolute; left:8px; bottom:-2px; color:rgba(var(--cyan),.5);
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.16em}
+  .kv{display:block; width:100%; height:auto}
+  .scan{animation:scan 6.5s cubic-bezier(.6,0,.4,1) infinite}
+
+  /* status strip */
+  .status{display:flex; flex-wrap:wrap; gap:11px 26px; align-items:center;
+    margin:14px 0 0; padding:18px 0 4px; border-top:1px solid var(--hair);
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--paper-faint); font-variant-numeric:tabular-nums}
   .status .live{color:var(--live); display:inline-flex; align-items:center; gap:7px}
   .status b{color:var(--paper-mut); font-weight:500}
   .dot{width:7px; height:7px; border-radius:50%; background:var(--live); display:inline-block}
 
-  /* ── 工房3区画（状態機械：研究中→公開実験中→出荷済） ── */
-  .workshop{padding:56px 0 8px}
-  .shelf{display:grid; grid-template-columns:1fr; gap:16px; margin-top:22px}
-  @media(min-width:860px){.shelf{grid-template-columns:repeat(3,1fr)}}
+  /* section divider */
+  .divider{display:flex; align-items:center; gap:16px; margin:64px 0 0}
+  .divider .rule{flex:1; height:1px; background:var(--hair)}
+  .divider .tag{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--ochre); white-space:nowrap}
+  .divider .coord{font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:var(--paper-faint)}
+
+  .sec-lede{font-size:14px; line-height:1.9; color:var(--paper-faint); margin:16px 0 24px; max-width:66ch}
+  .sec-lede em{color:var(--paper-mut); font-style:normal}
+
+  /* ── 工房3区画 ── */
+  .shelf{display:grid; grid-template-columns:1fr; gap:16px; margin-top:6px}
+  @media(min-width:880px){.shelf{grid-template-columns:repeat(3,1fr)}}
   .cell{position:relative; border:1px solid var(--card-hair); border-radius:4px; background:var(--card);
-    padding:26px 24px 24px; display:flex; flex-direction:column; overflow:hidden}
+    padding:28px 24px 24px; display:flex; flex-direction:column; overflow:hidden}
   .cell::before{content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
-    background-image:linear-gradient(rgba(133,147,163,.05) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(133,147,163,.05) 1px,transparent 1px);
-    background-size:22px 22px}
+    background-image:linear-gradient(rgba(var(--cyan),.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(var(--cyan),.05) 1px,transparent 1px);
+    background-size:24px 24px}
   .cell>*{position:relative}
-  .cell .st{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
-    color:var(--paper-faint); margin:0 0 16px; line-height:1.7}
+  .cell .corner{position:absolute; width:10px; height:10px; color:rgba(var(--cyan),.45); z-index:2}
+  .cell .corner.a{top:8px; left:8px; border-top:1px solid; border-left:1px solid}
+  .cell .corner.b{bottom:8px; right:8px; border-bottom:1px solid; border-right:1px solid}
+  .cell .st{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; color:var(--paper-faint); margin:0 0 16px; line-height:1.7}
   .cell .st b{font-weight:600; color:var(--paper-mut); letter-spacing:.2em}
-  .cell h3{font-family:var(--serif); font-weight:500; font-size:clamp(18px,2.1vw,21px);
-    line-height:1.5; color:var(--paper); margin:0 0 12px}
+  .cell h3{font-family:var(--serif); font-weight:500; font-size:clamp(18px,2vw,21px); line-height:1.5; color:var(--paper); margin:0 0 12px}
   .cell p{font-size:13px; line-height:1.92; color:var(--paper-faint); margin:0 0 22px}
   .cell .cell-cta{margin-top:auto}
-  /* ① 研究中 ── 下書き線が多い（破線＝未確定） */
   .cell.research{border-style:dashed; border-color:rgba(243,239,230,.13)}
-  /* ② 公開実験中 ── 図面が引かれ始めた（中） */
   .cell.build{border-color:rgba(243,239,230,.17)}
-  .cell.build::before{opacity:.75}
-  /* ③ 出荷済 ── 図面が引き切られ、発光（山場） */
+  .cell.build::before{opacity:.72}
   .cell.shipped{border-color:rgba(224,163,46,.42);
     background:linear-gradient(180deg, rgba(224,163,46,.07), rgba(224,163,46,.01));
-    box-shadow:0 0 0 1px rgba(224,163,46,.08), 0 18px 52px -22px rgba(224,163,46,.4)}
+    box-shadow:0 0 0 1px rgba(224,163,46,.08), 0 20px 54px -24px rgba(224,163,46,.42)}
   .cell.shipped::before{opacity:.6;
     background-image:linear-gradient(rgba(224,163,46,.06) 1px,transparent 1px),
       linear-gradient(90deg,rgba(224,163,46,.06) 1px,transparent 1px)}
   .cell.shipped .st b{color:var(--ochre)}
+  .cell.shipped .corner{color:rgba(224,163,46,.5)}
 
-  /* ── Section (hub links / newsletter) ── */
-  .section{padding:52px 0 0}
-  .sec-head{display:flex; align-items:baseline; gap:16px; margin:0 0 6px}
-  .sec-kicker{font-family:var(--mono); font-size:11.5px; letter-spacing:.22em; color:var(--ochre)}
-  .sec-title{font-family:var(--serif); font-weight:500; font-size:clamp(20px,2.6vw,26px); color:var(--paper); line-height:1.4}
-  .sec-lede{font-size:13.5px; line-height:1.9; color:var(--paper-faint); margin:12px 0 22px; max-width:60ch}
-  .sec-lede em{color:var(--paper-mut); font-style:normal}
-  /* 無料メルマガ＝北極星降格：nurture/実数proof置場（primary→ghostで温度を落とす） */
-  .nl{padding:46px 0 0}
-  .nl .sec-title{font-size:clamp(18px,2.2vw,22px); color:var(--paper-mut)}
-
-  .list{display:grid; grid-template-columns:1fr; gap:12px}
+  /* ── build-in-public channel cards ── */
+  .list{display:grid; grid-template-columns:1fr; gap:12px; margin-top:6px}
   @media(min-width:760px){
     .list.two{grid-template-columns:1fr 1fr}
     .list.two a.card.accent{grid-column:1/-1}
@@ -188,38 +186,47 @@
   a.card .d{display:block; font-size:12.5px; line-height:1.7; color:var(--paper-faint); margin-top:4px}
   .tag{display:inline-block; font-family:var(--mono); font-size:9.5px; font-weight:600; letter-spacing:.1em;
     color:#171208; background:var(--ochre); border-radius:2px; padding:1px 6px; margin-left:8px; vertical-align:2px}
-  .tag.soon{background:transparent; color:var(--paper-faint); border:1px solid var(--hair)}
-  a.card.soon{opacity:.55}
 
-  /* ── Footer ── */
-  .foot{border-top:1px solid var(--hair); margin-top:64px; padding:26px 0 14px;
+  /* ── newsletter demoted ── */
+  .nl{margin-top:52px}
+  .nl h2{font-family:var(--serif); font-weight:500; font-size:clamp(18px,2vw,22px); color:var(--paper-mut); margin:14px 0 0; line-height:1.5}
+  .nl p{font-size:13.5px; line-height:1.9; color:var(--paper-faint); margin:12px 0 22px; max-width:64ch}
+  .nl p em{color:var(--paper-mut); font-style:normal}
+
+  /* footer */
+  .foot{border-top:1px solid var(--hair); margin-top:66px; padding:26px 0 12px;
     font-family:var(--mono); font-size:11px; letter-spacing:.12em; color:var(--paper-faint);
     display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px 20px}
-  .foot-note{padding:0 0 40px; font-family:var(--mono); font-size:10.5px;
-    letter-spacing:.08em; color:var(--paper-faint); opacity:.75; line-height:1.8}
+  .foot .social{display:flex; gap:18px}
   .foot a{color:var(--paper-faint); text-decoration:none; transition:color .2s}
   .foot a:hover{color:var(--ochre)}
-  .foot .social{display:flex; gap:18px}
+  .foot-note{padding:0 0 40px; font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--paper-faint); opacity:.72}
 
+  /* motion */
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes visin{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(87,201,138,.45)}50%{opacity:.5;box-shadow:0 0 0 5px rgba(87,201,138,0)}}
+  @keyframes opulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:0;transform:scale(2)}}
+  @keyframes obob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes oglow{0%,100%{opacity:.85}50%{opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes scan{0%,72%{transform:translateX(-120%)}86%,100%{transform:translateX(320%)}}
   @media(prefers-reduced-motion:no-preference){
     .dot{animation:pulse 2s ease-in-out infinite}
-    @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(87,201,138,.45)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(87,201,138,0)}}
-    .hero>*{animation:rise .8s cubic-bezier(.2,.6,.2,1) both}
-    .eyebrow{animation-delay:.02s}h1{animation-delay:.08s}.sign{animation-delay:.16s}.cta{animation-delay:.24s}.status{animation-delay:.32s}
-    @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    .h-copy>*{animation:rise .8s cubic-bezier(.2,.6,.2,1) both}
+    .eyebrow{animation-delay:.02s}h1{animation-delay:.1s}.sign{animation-delay:.2s}.cta{animation-delay:.3s}.status{animation-delay:.38s}
+    .h-vis{animation:visin 1s cubic-bezier(.2,.6,.2,1) .12s both}
+    .kv-ring{transform-box:fill-box; transform-origin:center; animation:spin 90s linear infinite}
+    .kv-opulse{transform-box:fill-box; transform-origin:center; animation:opulse 3.4s ease-in-out infinite}
+    .kv-bob{transform-box:fill-box; transform-origin:center; animation:obob 4.6s ease-in-out infinite}
+    .kv-oglow{animation:oglow 3.4s ease-in-out infinite}
   }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 
-  @media(prefers-reduced-motion:reduce){
-    *{animation:none!important;transition:none!important}
-    html{scroll-behavior:auto}
-  }
-
-  @media(max-width:720px){
+  @media(max-width:860px){
+    .hero{grid-template-columns:1fr; gap:26px; padding:44px 0 20px}
+    .h-vis{max-width:440px; margin:0 auto}
     .nav{display:none}
-    .hero{padding:58px 0 20px}
-    .status{gap:10px 20px}
-    .eyebrow{letter-spacing:.15em}
-    .eyebrow::after{display:none}
   }
 </style>
 </head>
@@ -232,173 +239,245 @@
       <div class="brand">NNETWORKS <b>×</b> MIWS</div>
       <nav class="nav">
         <a href="#workshop">工房を見て回る</a>
-        <a href="https://bip.nariken.ai/">実験ログ</a>
+        <a href="#log">実験ログ</a>
         <a href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる</a>
       </nav>
     </div>
 
     <!-- Hero -->
     <section class="hero">
-      <div class="hero-bg" aria-hidden="true">
-        <span class="grid"></span>
-        <svg class="hb-svg" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div class="h-copy">
+        <p class="eyebrow">NARIKEN.AI ── 公開工房 / OPEN WORKSHOP</p>
+        <h1>年商10億の会社を、<span class="nw">AIで作り替えている<span class="n">工房</span></span>。<br>その全工程を、ここで公開している。</h1>
+        <p class="sign">作れる人は、一万人。<em>自社を10倍にした人は、一人。</em></p>
+        <div class="cta">
+          <a class="btn primary" href="#workshop">工房を見て回る　→</a>
+          <a class="btn ghost" href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる　→</a>
+        </div>
+        <div class="status">
+          <span class="live"><span class="dot"></span>LIVE</span>
+          <span><b>Day 19</b> 稼働中</span>
+          <span>Kindle <b>6冊</b>出版</span>
+          <span>AI自律起案率 <b>81%</b></span>
+        </div>
+      </div>
+
+      <div class="h-vis" aria-hidden="true">
+        <div class="frame"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+        <span class="cap">FIG.01 ── REBUILD IN PROGRESS ／ ¥1B → ¥10B</span>
+        <svg class="kv" viewBox="0 0 640 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="会社をAIで作り替えている設計図">
           <defs>
-            <filter id="hbglow" x="-70%" y="-70%" width="240%" height="240%">
-              <feGaussianBlur stdDeviation="6" result="b"/>
+            <filter id="oglw" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="7" result="b"/>
               <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
+            <linearGradient id="scanG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="rgba(224,163,46,0)"/>
+              <stop offset=".5" stop-color="rgba(224,163,46,.5)"/>
+              <stop offset="1" stop-color="rgba(224,163,46,0)"/>
+            </linearGradient>
+            <clipPath id="visclip"><rect x="6" y="6" width="628" height="608" rx="4"/></clipPath>
           </defs>
-          <g stroke="rgba(150,196,210,.5)" stroke-width="1">
-            <circle cx="860" cy="350" r="300" stroke-dasharray="2 8" opacity=".5"/>
-            <circle cx="860" cy="350" r="252" opacity=".32"/>
-            <polygon points="860,140 1041.9,245 1041.9,455 860,560 678.1,455 678.1,245" opacity=".7"/>
-            <polygon points="860,210 981.2,280 981.2,420 860,490 738.8,420 738.8,280" opacity=".5"/>
-            <polygon points="860,272 927.5,311 927.5,389 860,428 792.5,389 792.5,311" opacity=".4"/>
-            <line x1="678.1" y1="245" x2="1041.9" y2="455" opacity=".25"/>
-            <line x1="1041.9" y1="245" x2="678.1" y2="455" opacity=".25"/>
-            <line x1="860" y1="140" x2="860" y2="560" opacity=".16"/>
-            <line x1="1041.9" y1="245" x2="1156" y2="182" opacity=".3"/>
-            <line x1="1041.9" y1="455" x2="1156" y2="520" opacity=".3"/>
-            <line x1="678.1" y1="245" x2="566" y2="182" opacity=".3"/>
+
+          <g clip-path="url(#visclip)">
+            <!-- concentric blueprint rings -->
+            <g stroke="rgb(150,196,210)">
+              <circle class="kv-ring" cx="300" cy="356" r="236" stroke-opacity=".16" stroke-dasharray="2 9"/>
+              <circle cx="300" cy="356" r="182" stroke-opacity=".12"/>
+              <circle cx="300" cy="356" r="120" stroke-opacity=".08"/>
+            </g>
+
+            <!-- workbench platform (iso slab) -->
+            <g stroke="rgb(150,196,210)" stroke-opacity=".5">
+              <polygon points="300,540 470,442 300,344 130,442" fill="rgba(150,196,210,.03)"/>
+              <line x1="130" y1="442" x2="130" y2="470" stroke-opacity=".3"/>
+              <line x1="300" y1="540" x2="300" y2="568" stroke-opacity=".3"/>
+              <line x1="470" y1="442" x2="470" y2="470" stroke-opacity=".3"/>
+              <polygon points="130,470 300,568 470,470 470,442 300,540 130,442" fill="rgba(150,196,210,.02)" stroke-opacity=".22"/>
+            </g>
+
+            <!-- building (company): block1 + block2 -->
+            <g stroke="rgb(150,196,210)" stroke-opacity=".62" stroke-linejoin="round">
+              <polygon points="300,470 358,503 358,433 300,400" fill="rgba(150,196,210,.05)"/>
+              <polygon points="300,470 242,503 242,433 300,400" fill="rgba(150,196,210,.03)"/>
+              <polygon points="300,400 358,433 300,466 242,433" fill="rgba(150,196,210,.07)"/>
+              <polygon points="300,400 358,433 358,363 300,330" fill="rgba(150,196,210,.05)"/>
+              <polygon points="300,400 242,433 242,363 300,330" fill="rgba(150,196,210,.03)"/>
+              <polygon points="300,330 358,363 300,396 242,363" fill="rgba(150,196,210,.08)"/>
+              <g stroke-opacity=".3">
+                <line x1="318" y1="452" x2="318" y2="470"/>
+                <line x1="338" y1="463" x2="338" y2="481"/>
+                <line x1="282" y1="452" x2="282" y2="470"/>
+              </g>
+            </g>
+
+            <!-- gap marker where AI block is inserted -->
+            <g stroke="rgb(150,196,210)" stroke-opacity=".35" stroke-dasharray="3 4">
+              <polygon points="300,330 358,363 300,396 242,363" fill="none"/>
+            </g>
+
+            <!-- ochre AI block (the one glow) lowered by the arm -->
+            <g class="kv-bob">
+              <g class="kv-oglow" filter="url(#oglw)">
+                <polygon points="300,250 358,283 358,213 300,180" fill="rgba(224,163,46,.16)" stroke="#E0A32E" stroke-opacity=".9"/>
+                <polygon points="300,250 242,283 242,213 300,180" fill="rgba(224,163,46,.1)" stroke="#E0A32E" stroke-opacity=".9"/>
+                <polygon points="300,180 358,213 300,246 242,213" fill="rgba(224,163,46,.22)" stroke="#E0A32E"/>
+              </g>
+              <text x="300" y="220" text-anchor="middle" font-family="ui-monospace,SF Mono,Menlo,Consolas,monospace" font-size="13" fill="#171208" font-weight="700">AI</text>
+            </g>
+
+            <!-- articulated exoskeleton arm -->
+            <g stroke="rgb(150,196,210)" stroke-opacity=".6" stroke-linecap="round">
+              <line x1="576" y1="72" x2="452" y2="146" stroke-width="2"/>
+              <line x1="570" y1="62" x2="446" y2="136" stroke-opacity=".3"/>
+              <line x1="452" y1="146" x2="368" y2="196" stroke-width="2"/>
+              <line x1="458" y1="156" x2="374" y2="206" stroke-opacity=".3"/>
+              <path d="M560 56 h30 v20 h-14" stroke-opacity=".45"/>
+              <path d="M368 196 L322 190 M368 196 L336 210" stroke-width="1.6" stroke-opacity=".75"/>
+              <circle cx="576" cy="72" r="7" fill="rgba(150,196,210,.08)"/>
+              <circle cx="452" cy="146" r="6.5" fill="rgba(150,196,210,.08)"/>
+              <circle cx="368" cy="196" r="5.5" fill="rgba(150,196,210,.08)"/>
+              <line x1="512" y1="98" x2="500" y2="126" stroke-opacity=".3"/>
+              <line x1="418" y1="164" x2="410" y2="186" stroke-opacity=".3"/>
+            </g>
+
+            <!-- HUD gauge near wrist -->
+            <g stroke="rgb(150,196,210)" stroke-opacity=".5" fill="none">
+              <circle cx="430" cy="214" r="24" stroke-opacity=".35"/>
+              <path d="M430 214 m-24 0 a24 24 0 0 1 40 -17" stroke="#E0A32E" stroke-opacity=".7" stroke-width="1.6"/>
+              <line x1="430" y1="214" x2="443" y2="204"/>
+              <g stroke-opacity=".3">
+                <line x1="430" y1="192" x2="430" y2="197"/>
+                <line x1="452" y1="214" x2="447" y2="214"/>
+                <line x1="430" y1="236" x2="430" y2="231"/>
+                <line x1="408" y1="214" x2="413" y2="214"/>
+              </g>
+            </g>
+
+            <!-- ochre pulse node at insertion contact -->
+            <circle class="kv-opulse" cx="300" cy="246" r="12" fill="none" stroke="#E0A32E" stroke-width="1" opacity=".5"/>
+            <circle cx="300" cy="246" r="2.6" fill="#E0A32E"/>
+
+            <!-- vertical dimension ¥1B -> ¥10B -->
+            <g stroke="rgb(150,196,210)" stroke-opacity=".4" font-family="ui-monospace,SF Mono,Menlo,Consolas,monospace">
+              <line x1="512" y1="196" x2="512" y2="500"/>
+              <path d="M508 200 l4 -6 l4 6" fill="none"/>
+              <path d="M508 496 l4 6 l4 -6" fill="none"/>
+              <line x1="507" y1="196" x2="517" y2="196"/>
+              <line x1="507" y1="500" x2="517" y2="500"/>
+              <text x="524" y="336" font-size="11" fill="rgba(150,196,210,.75)" letter-spacing="1">×10</text>
+              <text x="524" y="352" font-size="9" fill="rgba(150,196,210,.5)" letter-spacing=".5">¥1B→¥10B</text>
+            </g>
+
+            <!-- callout leaders + labels -->
+            <g font-family="ui-monospace,SF Mono,Menlo,Consolas,monospace" stroke="rgb(150,196,210)" stroke-opacity=".32">
+              <line x1="300" y1="180" x2="300" y2="128"/><line x1="300" y1="128" x2="196" y2="128"/>
+              <line x1="358" y1="470" x2="430" y2="512"/>
+            </g>
+            <g font-family="ui-monospace,SF Mono,Menlo,Consolas,monospace" fill="rgba(150,196,210,.7)">
+              <text x="196" y="124" text-anchor="end" font-size="10.5" letter-spacing="1">AI-CS ／ AGENT</text>
+              <text x="196" y="138" text-anchor="end" font-size="8.5" fill="rgba(150,196,210,.45)" letter-spacing=".5">工房から出荷 → 挿入</text>
+              <text x="434" y="516" font-size="9.5" letter-spacing="1" fill="rgba(150,196,210,.55)">N-NETWORKS ／ 自社</text>
+            </g>
+
+            <!-- corner blueprint annotation -->
+            <g stroke="rgb(150,196,210)" stroke-opacity=".3" font-family="ui-monospace,SF Mono,Menlo,Consolas,monospace">
+              <path d="M566 556 h-18 M566 556 v-18"/>
+              <text x="560" y="548" text-anchor="end" font-size="9" fill="rgba(150,196,210,.4)" letter-spacing="1">REV. 0.3</text>
+              <path d="M120 300 h14 M127 293 v14" stroke-opacity=".4"/>
+            </g>
+
+            <!-- one-shot scan sweep -->
+            <rect class="scan" x="-160" y="6" width="150" height="608" fill="url(#scanG)" opacity=".5"/>
           </g>
-          <g fill="rgba(150,196,210,.7)">
-            <circle cx="860" cy="140" r="3"/>
-            <circle cx="1041.9" cy="455" r="3"/>
-            <circle cx="678.1" cy="455" r="3"/>
-            <circle cx="678.1" cy="245" r="3"/>
-            <circle cx="860" cy="560" r="2.5"/>
-          </g>
-          <g stroke="rgba(150,196,210,.4)" stroke-width="1">
-            <path d="M600 300 h16 M608 292 v16"/>
-            <path d="M1122 382 h16 M1130 374 v16"/>
-            <path d="M902 602 h14 M909 595 v14"/>
-          </g>
-          <g stroke="rgba(150,196,210,.3)" stroke-width="1">
-            <line x1="700" y1="90" x2="1020" y2="90"/>
-            <line x1="700" y1="84" x2="700" y2="96"/>
-            <line x1="860" y1="84" x2="860" y2="96"/>
-            <line x1="1020" y1="84" x2="1020" y2="96"/>
-          </g>
-          <g filter="url(#hbglow)"><circle cx="1041.9" cy="245" r="5" fill="#E0A32E"/></g>
-          <circle class="hb-pulse" cx="1041.9" cy="245" r="12" fill="none" stroke="#E0A32E" stroke-width="1" opacity=".5"/>
         </svg>
-      </div>
-      <p class="eyebrow">NARIKEN.AI ── 公開工房 / OPEN WORKSHOP</p>
-      <h1>年商10億の会社を、<span class="nw">AIで作り替えている<span class="n">工房</span></span>。<br>その全工程を、ここで公開している。</h1>
-      <p class="sign">作れる人は、一万人。<em>自社を10倍にした人は、一人。</em></p>
-
-      <div class="cta">
-        <a class="btn primary" href="#workshop">工房を見て回る　→</a>
-        <a class="btn ghost" href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる　→</a>
-      </div>
-
-      <div class="status">
-        <span class="live"><span class="dot"></span>LIVE</span>
-        <span><b>Day 19</b> 稼働中</span>
-        <span>Kindle <b>6冊</b>出版</span>
-        <span>AI自律起案率 <b>81%</b></span>
       </div>
     </section>
 
     <!-- 工房3区画（研究中 → 公開実験中 → 出荷済） -->
-    <section class="workshop" id="workshop">
-      <div class="sec-head">
-        <span class="sec-kicker">── WORKSHOP ／ 状態別に並ぶ製品</span>
+    <div class="divider" id="workshop"><span class="tag">// WORKSHOP</span><span class="rule"></span><span class="coord">状態別に並ぶ製品 ／ 03 UNITS</span></div>
+    <p class="sec-lede">この工房には、いま手がけている製品が<em>"仕上がり具合"の順</em>に並んでいます。左＝まだ研究中のもの、真ん中＝公開しながら作っている試作、右＝すでに実企業で毎日動いている完成品。その制作ログも、一緒に。</p>
+    <div class="shelf">
+      <div class="cell research">
+        <span class="corner a"></span><span class="corner b"></span>
+        <p class="st">01 / <b>RESEARCH</b> ── いま工房に入ってきた新素材</p>
+        <h3>次に何を作れるか、まだ触っている。</h3>
+        <p>フィジカルAI──画面の中だけだったAIを、モノの世界へ持ち出せるか。まだ製品ですらない。仮説を立てて、素材を並べて、手で確かめている段階です。工房の一番手前で、これから何になるか分からないものを触っている記録。</p>
+        <div class="cell-cta"><a class="btn ghost sm" href="https://bip.nariken.ai/">研究の様子を観る　→</a></div>
       </div>
-      <p class="sec-lede">この工房には、いま手がけている製品が<em>"仕上がり具合"の順</em>に並んでいます。左＝まだ研究中のもの、真ん中＝公開しながら作っている試作、右＝すでに実企業で毎日動いている完成品。その制作ログも、一緒に。</p>
-      <div class="shelf">
-
-        <!-- ① 研究中 ── フィジカルAI（観る／弱） -->
-        <div class="cell research">
-          <p class="st">01 / <b>RESEARCH</b> ── いま工房に入ってきた新素材</p>
-          <h3>次に何を作れるか、まだ触っている。</h3>
-          <p>フィジカルAI──画面の中だけだったAIを、モノの世界へ持ち出せるか。まだ製品ですらない。仮説を立てて、素材を並べて、手で確かめている段階です。工房の一番手前で、これから何になるか分からないものを触っている記録。</p>
-          <div class="cell-cta"><a class="btn ghost sm" href="https://bip.nariken.ai/">研究の様子を観る　→</a></div>
-        </div>
-
-        <!-- ② 公開実験中 ── MIWS Cast（集客／中） -->
-        <div class="cell build">
-          <p class="st">02 / <b>OPEN BUILD</b> ── いま工程を全開にしている試作台</p>
-          <h3>作っている途中を、全部見せている。</h3>
-          <p>MIWS Cast──小さな事業者が、一言かURLひとつで自分の配信の道すじを引ける道具。設計も、詰まりも、直しも、この工房でリアルタイムに公開しています。「どう作ったか」は全部ここに。試して、外して、またやる。その現物です。</p>
-          <div class="cell-cta"><a class="btn secondary sm" href="https://nariken.github.io/miws-cast-lp/">公開実験に参加する／試す　→</a></div>
-        </div>
-
-        <!-- ③ 出荷済 ── AI-CS（MIWS AgentOps）→ Nnetworks（診断／発光・山場） -->
-        <div class="cell shipped">
-          <p class="st">03 / <b>SHIPPED</b> ── 工房を卒業して、実企業で回っている製品</p>
-          <h3>自社の年商10億を、これで作り替えている。</h3>
-          <p>この工房で作ったAI-CSを、いま実際にエヌネットワークス（年商10億規模）のカスタマーサポートに入れて、業務そのものを作り替えています。試作品ではなく、本番で毎日回っている製品。──MIWS AgentOps。「どう作ったか」はここまで全部見せました。「どう変わったか」の実数は、この先で。</p>
-          <div class="cell-cta"><a class="btn primary sm" href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる　→ 30分診断</a></div>
-        </div>
-
+      <div class="cell build">
+        <span class="corner a"></span><span class="corner b"></span>
+        <p class="st">02 / <b>OPEN BUILD</b> ── いま工程を全開にしている試作台</p>
+        <h3>作っている途中を、全部見せている。</h3>
+        <p>MIWS Cast──小さな事業者が、一言かURLひとつで自分の配信の道すじを引ける道具。設計も、詰まりも、直しも、この工房でリアルタイムに公開しています。「どう作ったか」は全部ここに。試して、外して、またやる。その現物です。</p>
+        <div class="cell-cta"><a class="btn secondary sm" href="https://nariken.github.io/miws-cast-lp/">公開実験に参加する／試す　→</a></div>
       </div>
-    </section>
+      <div class="cell shipped">
+        <span class="corner a"></span><span class="corner b"></span>
+        <p class="st">03 / <b>SHIPPED</b> ── 工房を卒業して、実企業で回っている製品</p>
+        <h3>自社の年商10億を、これで作り替えている。</h3>
+        <p>この工房で作ったAI-CSを、いま実際にエヌネットワークス（年商10億規模）のカスタマーサポートに入れて、業務そのものを作り替えています。試作品ではなく、本番で毎日回っている製品。──MIWS AgentOps。「どう作ったか」はここまで全部見せました。「どう変わったか」の実数は、この先で。</p>
+        <div class="cell-cta"><a class="btn primary sm" href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる　→ 30分診断</a></div>
+      </div>
+    </div>
 
-    <!-- 実験ログ / build in public（＝制作ログ・全公開） -->
-    <section class="section" id="log">
-      <div class="sec-head">
-        <span class="sec-kicker">── BUILD IN PUBLIC</span>
-      </div>
-      <h2 class="sec-title">「どう作ったか」は、全部ここに。</h2>
-      <p class="sec-lede">工房の制作ログ──設計も、詰まりも、直しも、失敗込みで毎日書いています。母艦はこちら。</p>
-      <div class="list two">
-        <a class="card accent" href="https://bip.nariken.ai/">
-          <span class="ic">◆</span>
-          <span class="body">
-            <span class="tt">実験ログ・母艦<span class="tag">毎日更新</span></span>
-            <span class="d">自社リビルドの作業日報／build in public。うまくいったことも詰まったことも、そのまま。</span>
-          </span>
-        </a>
-        <a class="card" href="https://x.com/nariken">
-          <span class="ic">𝕏</span>
-          <span class="body">
-            <span class="tt">X（@nariken）</span>
-            <span class="d">毎日の実験ログ・失敗も成功もそのまま流しています。</span>
-          </span>
-        </a>
-        <a class="card" href="https://note.com/ken_narita269">
-          <span class="ic">📝</span>
-          <span class="body">
-            <span class="tt">note（深掘り記事）</span>
-            <span class="d">本ができるまでの全工程・失敗込みで書いています。</span>
-          </span>
-        </a>
-        <a class="card" href="https://open.spotify.com/show/033p0uJPUpHFp5VlqsJRRw">
-          <span class="ic">🎙️</span>
-          <span class="body">
-            <span class="tt">Podcast</span>
-            <span class="d">書籍のテーマを音声で・通勤の7分に。Spotify / Apple Podcastsで配信中。</span>
-          </span>
-        </a>
-        <a class="card" href="https://www.youtube.com/@narita_ken-l5z">
-          <span class="ic">▶</span>
-          <span class="body">
-            <span class="tt">YouTube</span>
-            <span class="d">解説ショート＋実況・AIが会社を回す様子を。</span>
-          </span>
-        </a>
-        <a class="card" href="https://www.tiktok.com/@narita_ken">
-          <span class="ic">🎬</span>
-          <span class="body">
-            <span class="tt">TikTok（@narita_ken）</span>
-            <span class="d">実験ショート・60秒でわかるAI丸投げ。</span>
-          </span>
-        </a>
-      </div>
-    </section>
+    <!-- 実験ログ / build in public -->
+    <div class="divider" id="log"><span class="tag">// BUILD IN PUBLIC</span><span class="rule"></span><span class="coord">制作ログ ／ 全公開</span></div>
+    <p class="sec-lede">工房の制作ログ──設計も、詰まりも、直しも、失敗込みで毎日書いています。「どう作ったか」は、全部ここに。母艦はこちら。</p>
+    <div class="list two">
+      <a class="card accent" href="https://bip.nariken.ai/">
+        <span class="ic">◆</span>
+        <span class="body">
+          <span class="tt">実験ログ・母艦<span class="tag">毎日更新</span></span>
+          <span class="d">自社リビルドの作業日報／build in public。うまくいったことも詰まったことも、そのまま。</span>
+        </span>
+      </a>
+      <a class="card" href="https://x.com/nariken">
+        <span class="ic">𝕏</span>
+        <span class="body">
+          <span class="tt">X（@nariken）</span>
+          <span class="d">毎日の実験ログ・失敗も成功もそのまま流しています。</span>
+        </span>
+      </a>
+      <a class="card" href="https://note.com/ken_narita269">
+        <span class="ic">📝</span>
+        <span class="body">
+          <span class="tt">note（深掘り記事）</span>
+          <span class="d">本ができるまでの全工程・失敗込みで書いています。</span>
+        </span>
+      </a>
+      <a class="card" href="https://open.spotify.com/show/033p0uJPUpHFp5VlqsJRRw">
+        <span class="ic">🎙️</span>
+        <span class="body">
+          <span class="tt">Podcast</span>
+          <span class="d">書籍のテーマを音声で・通勤の7分に。Spotify / Apple Podcastsで配信中。</span>
+        </span>
+      </a>
+      <a class="card" href="https://www.youtube.com/@narita_ken-l5z">
+        <span class="ic">▶</span>
+        <span class="body">
+          <span class="tt">YouTube</span>
+          <span class="d">解説ショート＋実況・AIが会社を回す様子を。</span>
+        </span>
+      </a>
+      <a class="card" href="https://www.tiktok.com/@narita_ken">
+        <span class="ic">🎬</span>
+        <span class="body">
+          <span class="tt">TikTok（@narita_ken）</span>
+          <span class="d">実験ショート・60秒でわかるAI丸投げ。</span>
+        </span>
+      </a>
+    </div>
 
-    <!-- 無料メルマガ（北極星降格：nurture＋実数proof置場・温度を落とす） -->
-    <section class="section nl" id="newsletter">
-      <div class="sec-head">
-        <span class="sec-kicker">── NEWSLETTER ／ 実数はこの先</span>
-      </div>
-      <h2 class="sec-title">「どう変わったか」の実数は、この先で。</h2>
-      <p class="sec-lede">作り方（どう作ったか）は、この工房で全部公開しています。でも、自社をAIで作り替えて<em>“どう変わったか”──Before→Afterの実数</em>は、メルマガの中だけ。実証の記録と、次の一歩を、登録した人に。</p>
+    <!-- 無料メルマガ（北極星降格：nurture＋実数proof置場） -->
+    <div class="nl" id="newsletter">
+      <div class="divider"><span class="tag">// NEWSLETTER</span><span class="rule"></span><span class="coord">実数はこの先 ／ MEMBERS</span></div>
+      <h2>「どう変わったか」の実数は、この先で。</h2>
+      <p>作り方（どう作ったか）は、この工房で全部公開しています。でも、自社をAIで作り替えて<em>“どう変わったか”──Before→Afterの実数</em>は、メルマガの中だけ。実証の記録と、次の一歩を、登録した人に。</p>
       <div class="cta">
         <a class="btn ghost" href="https://bip.nariken.ai/#/portal/signup">メルマガに登録する（実数proof＋第1弾ツール）　→</a>
       </div>
-    </section>
+    </div>
 
     <!-- Footer -->
     <div class="foot">
