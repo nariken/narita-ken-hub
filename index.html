@@ -167,6 +167,42 @@
   .cell.shipped .st b{color:var(--ochre)}
   .cell.shipped .corner{color:rgba(224,163,46,.5)}
 
+  /* ── philosophy（AIファースト → オートメーション → 拡張） ── */
+  .philo{margin-top:4px}
+  .thesis{font-family:var(--serif); font-weight:600; color:var(--paper);
+    font-size:clamp(21px,3vw,32px); line-height:1.5; letter-spacing:.01em; margin:18px 0 8px; text-wrap:balance; max-width:22ch}
+  .thesis .n{color:var(--ochre); font-style:normal}
+  .thesis-sub{font-size:13.5px; line-height:1.9; color:var(--paper-faint); margin:0 0 30px; max-width:62ch}
+  .steps{display:grid; grid-template-columns:1fr; gap:14px; align-items:stretch}
+  @media(min-width:820px){
+    .steps{grid-template-columns:1fr 1fr 1fr; gap:0}
+    .step{border-radius:0}
+    .step:first-child{border-radius:4px 0 0 4px}
+    .step:last-child{border-radius:0 4px 4px 0}
+    .step + .step{border-left:none}
+    .step:not(:last-child)::after{content:"→"; position:absolute; right:-12px; top:50%; transform:translateY(-50%);
+      z-index:3; font-family:var(--mono); font-size:13px; color:var(--paper-mut);
+      background:#0E1520; width:24px; height:24px; border:1px solid var(--hair); border-radius:50%;
+      display:flex; align-items:center; justify-content:center}
+  }
+  .step{position:relative; border:1px solid var(--card-hair); background:var(--card); border-radius:4px;
+    padding:24px 22px; display:flex; flex-direction:column}
+  .step .no{font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--paper-faint)}
+  .step .no b{color:var(--paper-mut); font-weight:600; letter-spacing:.2em}
+  .step .en{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; color:var(--paper-faint); margin:14px 0 0}
+  .step h3{font-family:var(--serif); font-weight:500; font-size:clamp(17px,1.9vw,20px); color:var(--paper); margin:4px 0 10px; line-height:1.5}
+  .step p{font-size:12.5px; line-height:1.9; color:var(--paper-faint); margin:0 0 16px}
+  .step .role{margin-top:auto; font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:var(--paper-faint);
+    border-top:1px solid var(--hair); padding-top:12px}
+  .step .role b{color:var(--paper-mut); font-weight:600}
+  .step.goal{border-color:rgba(224,163,46,.42);
+    background:linear-gradient(180deg, rgba(224,163,46,.07), rgba(224,163,46,.01));
+    box-shadow:0 0 0 1px rgba(224,163,46,.08), 0 20px 54px -26px rgba(224,163,46,.45)}
+  .step.goal .no b,.step.goal .en{color:var(--ochre)}
+  .philo-foot{font-family:var(--serif); font-size:clamp(15px,1.8vw,18px); line-height:1.7; color:var(--paper-mut);
+    margin:28px 0 0; text-wrap:balance}
+  .philo-foot em{font-style:normal; color:var(--paper); border-bottom:1px solid rgba(224,163,46,.55); padding-bottom:2px}
+
   /* ── build-in-public channel cards ── */
   .list{display:grid; grid-template-columns:1fr; gap:12px; margin-top:6px}
   @media(min-width:760px){
@@ -392,6 +428,37 @@
           </g>
         </svg>
       </div>
+    </section>
+
+    <!-- PHILOSOPHY（思想：AIファースト → オートメーション → 拡張） -->
+    <section class="philo" id="philosophy">
+      <div class="divider"><span class="tag">// PHILOSOPHY</span><span class="rule"></span><span class="coord">思想 ／ AI-FIRST · AUTOMATION · AUGMENT</span></div>
+      <p class="thesis">AIで置き換えるのではなく、<span class="n">人と組織を"拡張"する。</span></p>
+      <p class="thesis-sub">AIは道具ではなく、着る外骨格。人は生身のまま、装備で規格外の出力を出す。──だから、この工房はまず自分の会社で、それを証明しています。</p>
+      <div class="steps">
+        <div class="step">
+          <span class="no">01 ／ <b>AI-FIRST</b></span>
+          <span class="en">どう作るか</span>
+          <h3>まず、AIがやる。</h3>
+          <p>起案も実行も、既定はAI。人は方向を決めて承認する。「後からAIを足す」のではなく、最初からAIで組む。自社を丸ごとAIファーストで動かしています。</p>
+          <span class="role">役割 ── <b>手段の既定</b></span>
+        </div>
+        <div class="step">
+          <span class="no">02 ／ <b>AUTOMATION</b></span>
+          <span class="en">何を作るか</span>
+          <h3>自動化で、余力をつくる。</h3>
+          <p>自動化できるものは、全部自動化する。ただし狙いは"人減らし"ではありません。自動化は、キャパシティ（余力）を生むための手段です。</p>
+          <span class="role">役割 ── <b>キャパをつくる</b></span>
+        </div>
+        <div class="step goal">
+          <span class="no">03 ／ <b>AUGMENT</b></span>
+          <span class="en">何のために</span>
+          <h3>人と組織を、拡張する。</h3>
+          <p>生まれた余力を、可能性の拡張へ。同じ人数で10倍を捌く。年商10億→100億は、人を10倍にするのではなく、一人ひとりの可能性を10倍に広げた証明です。</p>
+          <span class="role">役割 ── <b>目的</b></span>
+        </div>
+      </div>
+      <p class="philo-foot">自動化は、人を減らすためではなく、<em>一人ひとりの可能性を広げるために。</em></p>
     </section>
 
     <!-- 工房3区画（研究中 → 公開実験中 → 出荷済） -->
