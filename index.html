@@ -50,6 +50,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   ::selection{background:var(--ochre);color:#171208}
   a:focus-visible{outline:2px solid var(--ochre);outline-offset:3px;border-radius:2px}
+  html{scroll-behavior:smooth}
   .page{background:
       radial-gradient(120% 60% at 50% -6%, #17222E 0%, var(--ink) 48%),
       var(--ink);
@@ -74,14 +75,18 @@
     color:var(--ochre); margin:0 0 26px; display:flex; align-items:center; gap:12px}
   .eyebrow::after{content:""; height:1px; width:64px; background:var(--hair)}
   h1{font-family:var(--serif); font-weight:600; margin:0;
-    font-size:clamp(30px,8.4vw,62px); line-height:1.32; letter-spacing:.01em;
+    font-size:clamp(28px,7.4vw,56px); line-height:1.4; letter-spacing:.01em;
     color:var(--paper); text-wrap:balance}
   h1 .n{color:var(--ochre); font-style:normal}
-  h1 .n small{font-size:.62em; vertical-align:.02em; letter-spacing:.02em}
+  h1 .nw{white-space:nowrap}
+  /* 看板（確定コピー・改変禁止） */
+  .sign{font-family:var(--serif); font-weight:500; font-size:clamp(17px,2.7vw,24px);
+    line-height:1.7; color:var(--paper-mut); margin:28px 0 0; letter-spacing:.02em; text-wrap:balance}
+  .sign em{font-style:normal; color:var(--paper);
+    border-bottom:1px solid rgba(224,163,46,.55); padding-bottom:2px}
   .lede{font-size:clamp(15px,1.9vw,17.5px); line-height:2.0; color:var(--paper-mut);
     max-width:62ch; margin:30px 0 0; letter-spacing:.01em}
   .lede em{color:var(--paper); font-style:normal; border-bottom:1px solid rgba(224,163,46,.5); padding-bottom:1px}
-  .lede .then{color:var(--paper); font-weight:600}
 
   .cta{display:flex; gap:14px; flex-wrap:wrap; margin:38px 0 0}
   .btn{font-family:var(--sans); font-size:14.5px; letter-spacing:.04em; text-decoration:none;
@@ -89,8 +94,11 @@
     display:inline-flex; align-items:center; gap:9px}
   .btn.primary{background:var(--ochre); color:#171208; font-weight:600}
   .btn.primary:hover{transform:translateY(-1px); background:#EEB443}
+  .btn.secondary{border:1px solid rgba(224,163,46,.45); color:var(--ochre); background:rgba(224,163,46,.06)}
+  .btn.secondary:hover{background:rgba(224,163,46,.13); border-color:var(--ochre)}
   .btn.ghost{border:1px solid rgba(243,239,230,.28); color:var(--paper)}
   .btn.ghost:hover{border-color:var(--ochre); color:var(--ochre)}
+  .btn.sm{font-size:13px; padding:12px 18px}
 
   .status{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center;
     margin:48px 0 0; padding:16px 0 0; border-top:1px solid var(--hair);
@@ -100,22 +108,48 @@
   .status b{color:var(--paper-mut); font-weight:500}
   .dot{width:7px; height:7px; border-radius:50%; background:var(--live); display:inline-block}
 
-  /* ── B2B 一等地バンド ── */
-  .band{margin:56px 0 24px; border:1px solid var(--hair); border-radius:4px;
-    background:linear-gradient(180deg, rgba(224,163,46,.06), rgba(224,163,46,0));
-    padding:38px 34px; display:grid; grid-template-columns:1fr auto; gap:26px; align-items:center}
-  .band .lab{font-family:var(--mono); font-size:11.5px; letter-spacing:.22em; color:var(--ochre); margin:0 0 14px}
-  .band h2{font-family:var(--serif); font-weight:500; font-size:clamp(21px,3vw,28px);
-    line-height:1.5; margin:0; color:var(--paper)}
-  .band p{font-size:14px; line-height:1.85; color:var(--paper-mut); margin:12px 0 0; max-width:46ch}
-  .band .go{white-space:nowrap}
+  /* ── 工房3区画（状態機械：研究中→公開実験中→出荷済） ── */
+  .workshop{padding:56px 0 8px}
+  .shelf{display:grid; grid-template-columns:1fr; gap:16px; margin-top:22px}
+  @media(min-width:860px){.shelf{grid-template-columns:repeat(3,1fr)}}
+  .cell{position:relative; border:1px solid var(--card-hair); border-radius:4px; background:var(--card);
+    padding:26px 24px 24px; display:flex; flex-direction:column; overflow:hidden}
+  .cell::before{content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:linear-gradient(rgba(133,147,163,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(133,147,163,.05) 1px,transparent 1px);
+    background-size:22px 22px}
+  .cell>*{position:relative}
+  .cell .st{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+    color:var(--paper-faint); margin:0 0 16px; line-height:1.7}
+  .cell .st b{font-weight:600; color:var(--paper-mut); letter-spacing:.2em}
+  .cell h3{font-family:var(--serif); font-weight:500; font-size:clamp(18px,2.1vw,21px);
+    line-height:1.5; color:var(--paper); margin:0 0 12px}
+  .cell p{font-size:13px; line-height:1.92; color:var(--paper-faint); margin:0 0 22px}
+  .cell .cell-cta{margin-top:auto}
+  /* ① 研究中 ── 下書き線が多い（破線＝未確定） */
+  .cell.research{border-style:dashed; border-color:rgba(243,239,230,.13)}
+  /* ② 公開実験中 ── 図面が引かれ始めた（中） */
+  .cell.build{border-color:rgba(243,239,230,.17)}
+  .cell.build::before{opacity:.75}
+  /* ③ 出荷済 ── 図面が引き切られ、発光（山場） */
+  .cell.shipped{border-color:rgba(224,163,46,.42);
+    background:linear-gradient(180deg, rgba(224,163,46,.07), rgba(224,163,46,.01));
+    box-shadow:0 0 0 1px rgba(224,163,46,.08), 0 18px 52px -22px rgba(224,163,46,.4)}
+  .cell.shipped::before{opacity:.6;
+    background-image:linear-gradient(rgba(224,163,46,.06) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(224,163,46,.06) 1px,transparent 1px)}
+  .cell.shipped .st b{color:var(--ochre)}
 
-  /* ── Section (hub links) ── */
+  /* ── Section (hub links / newsletter) ── */
   .section{padding:52px 0 0}
   .sec-head{display:flex; align-items:baseline; gap:16px; margin:0 0 6px}
   .sec-kicker{font-family:var(--mono); font-size:11.5px; letter-spacing:.22em; color:var(--ochre)}
   .sec-title{font-family:var(--serif); font-weight:500; font-size:clamp(20px,2.6vw,26px); color:var(--paper); line-height:1.4}
   .sec-lede{font-size:13.5px; line-height:1.9; color:var(--paper-faint); margin:12px 0 22px; max-width:60ch}
+  .sec-lede em{color:var(--paper-mut); font-style:normal}
+  /* 無料メルマガ＝北極星降格：nurture/実数proof置場（primary→ghostで温度を落とす） */
+  .nl{padding:46px 0 0}
+  .nl .sec-title{font-size:clamp(18px,2.2vw,22px); color:var(--paper-mut)}
 
   .list{display:grid; grid-template-columns:1fr; gap:12px}
   @media(min-width:760px){
@@ -152,18 +186,17 @@
     .dot{animation:pulse 2s ease-in-out infinite}
     @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(87,201,138,.45)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(87,201,138,0)}}
     .hero>*{animation:rise .8s cubic-bezier(.2,.6,.2,1) both}
-    .eyebrow{animation-delay:.02s}h1{animation-delay:.08s}.lede{animation-delay:.16s}.cta{animation-delay:.24s}.status{animation-delay:.32s}
+    .eyebrow{animation-delay:.02s}h1{animation-delay:.08s}.sign{animation-delay:.16s}.cta{animation-delay:.24s}.status{animation-delay:.32s}
     @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   }
 
   @media(prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
   }
 
   @media(max-width:720px){
-    .band{grid-template-columns:1fr; padding:30px 24px}
     .nav{display:none}
-    .band .go{justify-self:start}
     .hero{padding:58px 0 20px}
     .status{gap:10px 20px}
     .eyebrow{letter-spacing:.15em}
@@ -179,6 +212,7 @@
     <div class="topbar">
       <div class="brand">NNETWORKS <b>×</b> MIWS</div>
       <nav class="nav">
+        <a href="#workshop">工房を見て回る</a>
         <a href="https://bip.nariken.ai/">実験ログ</a>
         <a href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる</a>
       </nav>
@@ -186,60 +220,71 @@
 
     <!-- Hero -->
     <section class="hero">
-      <p class="eyebrow">10億 → 100億 ／ 挑戦の記録・PUBLIC BUILD</p>
-      <h1>年商10億の会社を、<br>AIで<span class="n">100億</span>に作り替える。</h1>
-      <p class="lede">非エンジニアの経営者が、25年つくった自分の会社〈<em>エヌネットワークス</em>〉を、AIでゼロから作り直す。起案も、実行も、障害対応も、AIがやる。うまくいったことも、詰まったことも、<em>稼働ログを全部公開</em>しながら。100億は約束じゃない——挑戦の記録です。<span class="then">AIで、人と企業の可能性を広げ続ける。</span></p>
+      <p class="eyebrow">NARIKEN.AI ── 公開工房 / OPEN WORKSHOP</p>
+      <h1>年商10億の会社を、<span class="nw">AIで作り替えている<span class="n">工房</span></span>。<br>その全工程を、ここで公開している。</h1>
+      <p class="sign">作れる人は、一万人。<em>自社を10倍にした人は、一人。</em></p>
 
       <div class="cta">
-        <a class="btn primary" href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる　→</a>
-        <a class="btn ghost" href="https://bip.nariken.ai/">最新ログを読む　→</a>
+        <a class="btn primary" href="#workshop">工房を見て回る　→</a>
+        <a class="btn ghost" href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる　→</a>
       </div>
 
       <div class="status">
         <span class="live"><span class="dot"></span>LIVE</span>
         <span><b>Day 19</b> 稼働中</span>
         <span>Kindle <b>6冊</b>出版</span>
-        <span>総再生 <b>3万+</b></span>
         <span>AI自律起案率 <b>81%</b></span>
       </div>
     </section>
 
-    <!-- B2B 一等地バンド -->
-    <section class="band">
-      <div>
-        <p class="lab">B2B ── AI導入のご相談</p>
-        <h2>「作ったAI」を、回すところまで。</h2>
-        <p>エヌネットワークスが自社で回しているAIを、そのまま製品にしました。AIカスタマーサポート「MIWS AgentOps」。AIが書き、人が出す。</p>
-      </div>
-      <a class="btn primary go" href="https://www.nnetworks.co.jp/agentops.html">MIWS AgentOps を見る　→</a>
-    </section>
-
-    <!-- 無料メルマガ / 受け皿（北極星＝オウンドリスト） -->
-    <section class="section" id="newsletter">
+    <!-- 工房3区画（研究中 → 公開実験中 → 出荷済） -->
+    <section class="workshop" id="workshop">
       <div class="sec-head">
-        <span class="sec-kicker">── NEWSLETTER ／ 無料</span>
+        <span class="sec-kicker">── WORKSHOP ／ 状態別に並ぶ製品</span>
       </div>
-      <h2 class="sec-title">AIで"実際に作った"ものを、毎週1つ。</h2>
-      <p class="sec-lede">非エンジニアがAIで会社を動かしている実験の"やり方"を、手順も、原価も、失敗もそのまま。毎号、<em>あなたがそのまま盗めるツール</em>を1個。読むだけで、次の一歩が踏めます。</p>
-      <div class="cta">
-        <a class="btn primary" href="https://bip.nariken.ai/#/portal/signup">無料で受け取る（第1弾ツール「AI丸投げスターターキット」つき）　→</a>
-        <a class="btn ghost" href="https://bip.nariken.ai/">まずログを読む　→</a>
+      <p class="sec-lede">放送局ではなく、工房です。並んでいるのは番組ではなく、<em>状態の違う製品と、その制作ログ</em>。手前が生まれたて、奥が卒業した製品。</p>
+      <div class="shelf">
+
+        <!-- ① 研究中 ── フィジカルAI（観る／弱） -->
+        <div class="cell research">
+          <p class="st">01 / <b>RESEARCH</b> ── いま工房に入ってきた新素材</p>
+          <h3>次に何を作れるか、まだ触っている。</h3>
+          <p>フィジカルAI──画面の中だけだったAIを、モノの世界へ持ち出せるか。まだ製品ですらない。仮説を立てて、素材を並べて、手で確かめている段階です。工房の一番手前で、これから何になるか分からないものを触っている記録。</p>
+          <div class="cell-cta"><a class="btn ghost sm" href="https://bip.nariken.ai/">研究の様子を観る　→</a></div>
+        </div>
+
+        <!-- ② 公開実験中 ── MIWS Cast（集客／中） -->
+        <div class="cell build">
+          <p class="st">02 / <b>OPEN BUILD</b> ── いま工程を全開にしている試作台</p>
+          <h3>作っている途中を、全部見せている。</h3>
+          <p>MIWS Cast──小さな事業者が、一言かURLひとつで自分の配信の道すじを引ける道具。設計も、詰まりも、直しも、この工房でリアルタイムに公開しています。「どう作ったか」は全部ここに。試して、外して、またやる。その現物です。</p>
+          <div class="cell-cta"><a class="btn secondary sm" href="https://nariken.github.io/miws-cast-lp/">公開実験に参加する／試す　→</a></div>
+        </div>
+
+        <!-- ③ 出荷済 ── AI-CS（MIWS AgentOps）→ Nnetworks（診断／発光・山場） -->
+        <div class="cell shipped">
+          <p class="st">03 / <b>SHIPPED</b> ── 工房を卒業して、実企業で回っている製品</p>
+          <h3>自社の年商10億を、これで作り替えている。</h3>
+          <p>この工房で作ったAI-CSを、いま実際にエヌネットワークス（年商10億規模）のカスタマーサポートに入れて、業務そのものを作り替えています。試作品ではなく、本番で毎日回っている製品。──MIWS AgentOps。「どう作ったか」はここまで全部見せました。「どう変わったか」の実数は、この先で。</p>
+          <div class="cell-cta"><a class="btn primary sm" href="https://www.nnetworks.co.jp/agentops.html">会社にAIを入れる　→ 30分診断</a></div>
+        </div>
+
       </div>
     </section>
 
-    <!-- 実験ログ / build in public -->
+    <!-- 実験ログ / build in public（＝制作ログ・全公開） -->
     <section class="section" id="log">
       <div class="sec-head">
         <span class="sec-kicker">── BUILD IN PUBLIC</span>
       </div>
-      <h2 class="sec-title">実験ログを、全部公開しています。</h2>
-      <p class="sec-lede">「AIが会社を運営したらどうなるか」の実験の裏側を、失敗も込みで毎日書いています。母艦はこちら。</p>
+      <h2 class="sec-title">「どう作ったか」は、全部ここに。</h2>
+      <p class="sec-lede">工房の制作ログ──設計も、詰まりも、直しも、失敗込みで毎日書いています。母艦はこちら。</p>
       <div class="list two">
         <a class="card accent" href="https://bip.nariken.ai/">
           <span class="ic">◆</span>
           <span class="body">
             <span class="tt">実験ログ・母艦<span class="tag">毎日更新</span></span>
-            <span class="d">AI導入の実装ログ／build in public。うまくいったことも詰まったことも、そのまま。</span>
+            <span class="d">自社リビルドの作業日報／build in public。うまくいったことも詰まったことも、そのまま。</span>
           </span>
         </a>
         <a class="card" href="https://x.com/nariken">
@@ -277,6 +322,18 @@
             <span class="d">実験ショート・60秒でわかるAI丸投げ。</span>
           </span>
         </a>
+      </div>
+    </section>
+
+    <!-- 無料メルマガ（北極星降格：nurture＋実数proof置場・温度を落とす） -->
+    <section class="section nl" id="newsletter">
+      <div class="sec-head">
+        <span class="sec-kicker">── NEWSLETTER ／ 実数はこの先</span>
+      </div>
+      <h2 class="sec-title">「どう変わったか」の実数は、この先で。</h2>
+      <p class="sec-lede">作り方（どう作ったか）は、この工房で全部公開しています。でも、自社をAIで作り替えて<em>“どう変わったか”──Before→Afterの実数</em>は、メルマガの中だけ。実証の記録と、次の一歩を、登録した人に。</p>
+      <div class="cta">
+        <a class="btn ghost" href="https://bip.nariken.ai/#/portal/signup">メルマガに登録する（実数proof＋第1弾ツール）　→</a>
       </div>
     </section>
 
